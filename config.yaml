@@ -2,26 +2,31 @@
 # Copy this to config.yaml and edit with your details.
 
 # Your target job role
-target_role: "Data Analyst"
+target_role: "Data Scientist"
 
 # City where you want to work
-target_city: "Bengaluru"
+target_city: "Indore"
 
 # Keywords to search for in job listings
 keywords:
-  - "data analysis"
-  - "SQL"
-  - "Python"
+  - "data science"
+  - "machine learning"
   - "analytics"
-  - "reporting"
+  - "Python"
+  - "statistics"
+  - "data analysis"
+  - "EDA"
 
 # Your current skills (used to surface skill gaps)
 my_skills:
   - "Python"
-  - "SQL"
-  - "Pandas"
-  - "Excel"
-  - "Tableau"
+  - "EDA"
+  - "Statistics"
+  - "Data Preprocessing"
+  - "Data Cleaning"
+  - "Data Visualization"
+  - "Machine Learning"
+  - "Data Analysis"
 
 # Years of professional experience
 experience_years: 3
