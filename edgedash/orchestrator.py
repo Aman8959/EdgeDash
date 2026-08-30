@@ -4,12 +4,12 @@ from datetime import datetime
 from edgedash.config import Config
 from edgedash import storage
 from edgedash.agents.base import Agent, AgentResult
-from edgedash.agents.mock_fetcher import MockFetcher
+from edgedash.agents.indeed_fetcher import IndeedFetcher
 
 
 # Agent registry — add new agents here, comment out to disable
 AGENT_REGISTRY = {
-    "fetcher": MockFetcher(),
+    "fetcher": IndeedFetcher(),
     # "scorer": Scorer(),      # Coming in week 2
     # "gap_analyzer": GapAnalyzer(),  # Coming in week 3
 }
