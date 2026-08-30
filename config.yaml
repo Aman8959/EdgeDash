@@ -1,0 +1,33 @@
+# EdgeDash Configuration
+# Copy this to config.yaml and edit with your details.
+
+# Your target job role
+target_role: "Data Analyst"
+
+# City where you want to work
+target_city: "Bengaluru"
+
+# Keywords to search for in job listings
+keywords:
+  - "data analysis"
+  - "SQL"
+  - "Python"
+  - "analytics"
+  - "reporting"
+
+# Your current skills (used to surface skill gaps)
+my_skills:
+  - "Python"
+  - "SQL"
+  - "Pandas"
+  - "Excel"
+  - "Tableau"
+
+# Years of professional experience
+experience_years: 3
+
+# Path to SQLite database (will be created if missing)
+db_path: "edgedash.db"
+
+# Minimum fit score to surface a listing (0-100)
+min_fit_score: 60
