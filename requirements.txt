@@ -1,0 +1,22 @@
+"""
+EdgeDash Project Dependencies
+"""
+
+# Core dependencies
+PyYAML>=6.0          # Config file loading
+requests>=2.28.0     # HTTP requests for job APIs
+beautifulsoup4>=4.11.0  # HTML parsing
+lxml>=4.9.0          # XML parsing for RSS feeds
+
+# Dashboard
+streamlit>=1.28.0    # Web dashboard
+pandas>=1.5.0        # Data manipulation
+
+# Database (optional)
+psycopg2-binary>=2.9.0  # PostgreSQL adapter (optional, for Postgres migration)
+
+# Development (optional)
+pytest>=7.0          # Testing
+black>=23.0          # Code formatting
+flake8>=5.0          # Linting
+mypy>=0.990          # Type checking

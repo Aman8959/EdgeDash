@@ -208,3 +208,36 @@ def update_listing_score(
     )
     conn.commit()
     conn.close()
+
+
+def update_skill_gaps(db_path: str, gaps: list[tuple[str, int]]) -> int:
+    """Update skill_gaps table with market demand data.
+    
+    Args:
+        db_path: Path to database
+        gaps: List of (skill_name, frequency) tuples
+    
+    Returns:
+        Count of gaps inserted/updated
+    """
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    
+    now = datetime.now().isoformat()
+    count = 0
+    
+    for skill, frequency in gaps:
+        cursor.execute(
+            """
+            INSERT OR REPLACE INTO skill_gaps
+            (skill, frequency, last_seen)
+            VALUES (?, ?, ?)
+            """,
+            (skill, frequency, now)
+        )
+        if cursor.rowcount > 0:
+            count += 1
+    
+    conn.commit()
+    conn.close()
+    return count
