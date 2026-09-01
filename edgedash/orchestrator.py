@@ -8,14 +8,29 @@ from edgedash.agents.indeed_fetcher import IndeedFetcher
 from edgedash.agents.scorer import Scorer
 from edgedash.agents.gap_analyzer import GapAnalyzer
 from edgedash.agents.verifier import Verifier
+from edgedash.agents.phase5_agents import (
+    JDAnalyzerAgent,
+    ResumeMatcherAgent,
+    ResumeGeneratorAgent,
+    ResumeValidatorAgent,
+    ATSOptimizerAgent,
+)
 
 
 # Agent registry — add new agents here, comment out to disable
 AGENT_REGISTRY = {
+    # Week 1-4 Agents
     "fetcher": IndeedFetcher(),
     "scorer": Scorer(),
     "gap_analyzer": GapAnalyzer(),  # Week 3 ✓
     "verifier": Verifier(),         # Week 4 ✓
+    
+    # Phase 5 Resume Intelligence Agents
+    "jd_analyzer": JDAnalyzerAgent(),         # Extract job requirements
+    "resume_matcher": ResumeMatcherAgent(),   # Match candidate to jobs
+    "resume_generator": ResumeGeneratorAgent(), # Generate tailored resumes
+    "resume_validator": ResumeValidatorAgent(), # Validate resumes (anti-hallucination)
+    "ats_optimizer": ATSOptimizerAgent(),     # Optimize for ATS systems
 }
 
 
@@ -50,6 +65,11 @@ def run_cycle(config: Config) -> None:
     print(f"  2. Run Scorer                (always — rate all unscored jobs)")
     print(f"  3. Run GapAnalyzer           (always — identify skill gaps)")
     print(f"  4. Run Verifier              (always — validate quality)")
+    print(f"  5. Run JD Analyzer           (Phase 5 — extract job requirements)")
+    print(f"  6. Run Resume Matcher        (Phase 5 — match candidate to jobs)")
+    print(f"  7. Run Resume Generator      (Phase 5 — generate tailored resumes)")
+    print(f"  8. Run Resume Validator      (Phase 5 — validate resumes)")
+    print(f"  9. Run ATS Optimizer         (Phase 5 — optimize for ATS)")
     
     # === RUN AGENTS ===
     print(f"\nRUNNING AGENTS:")

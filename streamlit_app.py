@@ -73,7 +73,7 @@ high_fit = cursor.fetchone()['high_fit']
 conn.close()
 
 # Main tabs
-tab1, tab2, tab3, tab4 = st.tabs(["📋 Top Jobs", "🎯 Skill Gaps", "📈 Statistics", "💡 Insights"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["📋 Top Jobs", "🎯 Skill Gaps", "📈 Statistics", "💡 Insights", "📄 Resume Intelligence"])
 
 # TAB 1: Top Jobs
 with tab1:
@@ -246,6 +246,19 @@ with tab4:
         )
     else:
         st.warning("⚠ No high-fit opportunities yet. Focus on skill gaps above.")
+
+# TAB 5: Resume Intelligence
+with tab5:
+    # Import the resume intelligence module
+    try:
+        from edgedash.streamlit_tabs.resume_intelligence import render_resume_intelligence_tab
+        render_resume_intelligence_tab()
+    except ImportError as e:
+        st.error(f"Resume Intelligence module not available: {str(e)}")
+    except Exception as e:
+        st.error(f"Error loading Resume Intelligence: {str(e)}")
+        import traceback
+        st.write(traceback.format_exc())
 
 # Footer
 st.markdown("---")
