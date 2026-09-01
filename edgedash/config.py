@@ -13,6 +13,28 @@ class Config:
     experience_years: int
     db_path: str
     min_fit_score: int
+    candidate_email: str = ""
+
+    def __init__(
+        self,
+        target_role: str,
+        target_city: str,
+        keywords: list[str],
+        my_skills: list[str],
+        experience_years: int,
+        db_path: str,
+        min_fit_score: int,
+        candidate_email: str = "",
+        **kwargs,
+    ):
+        self.target_role = target_role
+        self.target_city = target_city
+        self.keywords = keywords
+        self.my_skills = my_skills
+        self.experience_years = experience_years
+        self.db_path = db_path
+        self.min_fit_score = min_fit_score
+        self.candidate_email = candidate_email or kwargs.get("email", "")
 
 
 def load_config(config_path: str = "config.yaml") -> Config:

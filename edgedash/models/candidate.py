@@ -104,3 +104,25 @@ class CandidateProfile:
             total_months += months
         
         return round(total_months / 12, 1)
+
+
+# Backwards-compatible aliases for legacy imports used by older tests and scripts.
+Skill = CandidateSkill
+Experience = CandidateExperience
+Education = CandidateEducation
+Project = CandidateProject
+Certification = CandidateCertification
+
+__all__ = [
+    "CandidateSkill",
+    "CandidateProject",
+    "CandidateExperience",
+    "CandidateEducation",
+    "CandidateCertification",
+    "CandidateProfile",
+    "Skill",
+    "Experience",
+    "Education",
+    "Project",
+    "Certification",
+]

@@ -1,0 +1,32 @@
+F
+================================== FAILURES ===================================
+_____________ TestJDAnalyzer.test_extract_job_requirements_basic ______________
+
+self = <test_unit_comprehensive.TestJDAnalyzer object at 0x000001EC0C477440>
+test_db = 'test_edgedash_unit.db'
+
+    def test_extract_job_requirements_basic(self, test_db):
+        """Test basic job requirement extraction."""
+        job_id = "test_job_001"
+        title = "Senior Data Scientist"
+        description = """
+        We're looking for a Senior Data Scientist with:
+        - 5+ years experience in Python and Machine Learning
+        - Strong SQL and database skills
+        - Experience with TensorFlow and PyTorch
+        - Masters degree in CS or related field
+        """
+    
+        job_req = extract_jd_for_listing(test_db, job_id, title, description)
+    
+        assert job_req is not None
+        assert job_req.job_id == job_id
+>       assert job_req.title == title
+               ^^^^^^^^^^^^^
+E       AttributeError: 'JobRequirement' object has no attribute 'title'
+
+tests\test_unit_comprehensive.py:143: AttributeError
+=========================== short test summary info ===========================
+FAILED tests/test_unit_comprehensive.py::TestJDAnalyzer::test_extract_job_requirements_basic
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed in 0.97s
