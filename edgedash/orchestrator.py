@@ -5,12 +5,13 @@ from edgedash.config import Config
 from edgedash import storage
 from edgedash.agents.base import Agent, AgentResult
 from edgedash.agents.indeed_fetcher import IndeedFetcher
+from edgedash.agents.scorer import Scorer
 
 
 # Agent registry — add new agents here, comment out to disable
 AGENT_REGISTRY = {
     "fetcher": IndeedFetcher(),
-    # "scorer": Scorer(),      # Coming in week 2
+    "scorer": Scorer(),      # Week 2 ✓
     # "gap_analyzer": GapAnalyzer(),  # Coming in week 3
 }
 
@@ -43,7 +44,7 @@ def run_cycle(config: Config) -> None:
     # === PRINT PLAN & WHY ===
     print(f"\nPLAN:")
     print(f"  1. Run Fetcher               (always — get fresh listings)")
-    print(f"  2. Scorer                    (not implemented yet — skip)")
+    print(f"  2. Run Scorer                (always — rate all unscored jobs)")
     print(f"  3. GapAnalyzer               (not implemented yet — skip)")
     
     # === RUN AGENTS ===

@@ -174,3 +174,37 @@ def get_listings(
     rows = [dict(row) for row in cursor.fetchall()]
     conn.close()
     return rows
+
+
+def get_unscored_listings(db_path: str) -> list[dict]:
+    """Get all listings that have NOT been scored yet (fit_score IS NULL)."""
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT * FROM listings WHERE fit_score IS NULL ORDER BY fetched_at DESC"
+    )
+    rows = [dict(row) for row in cursor.fetchall()]
+    conn.close()
+    return rows
+
+
+def update_listing_score(
+    db_path: str,
+    listing_id: str,
+    fit_score: int,
+    fit_reason: str = ""
+) -> None:
+    """Update fit_score and fit_reason for a single listing."""
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        UPDATE listings
+        SET fit_score = ?, fit_reason = ?
+        WHERE id = ?
+        """,
+        (fit_score, fit_reason, listing_id)
+    )
+    conn.commit()
+    conn.close()
