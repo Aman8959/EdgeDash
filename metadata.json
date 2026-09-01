@@ -1,0 +1,6 @@
+{
+  "name": "EdgeDash - Career Intelligence Platform",
+  "description": "AI-Powered Career Intelligence Platform with 9 Autonomous Agents for Job Matching, Skill Gap Analysis, and Tailored ATS Resume Generation",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
