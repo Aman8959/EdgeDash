@@ -38,7 +38,7 @@ export const InsightsTab: React.FC<InsightsTabProps> = ({
         <h2 className="text-xl font-bold text-white flex items-center gap-2">
           <span>💡 Strategic Career Insights</span>
           <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
-            Autonomous Analysis
+            Strategic Recommendations
           </span>
         </h2>
         <p className="text-xs sm:text-sm text-slate-400 mt-1">

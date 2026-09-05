@@ -52,9 +52,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-lg text-white tracking-tight">EdgeDash</span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 font-medium">
-                  9 Autonomous Agents
-                </span>
               </div>
               <p className="text-xs text-slate-400 flex items-center gap-2 hidden sm:flex">
                 <span className="flex items-center gap-1"><Briefcase className="w-3 h-3 text-slate-500" /> {config.target_role}</span>
@@ -95,7 +92,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-600/25 transition disabled:opacity-50"
             >
               <Play className={`w-4 h-4 ${isCycling ? 'animate-spin' : ''}`} />
-              <span>{isCycling ? 'Running Cycle...' : 'Run 9-Agent Cycle'}</span>
+              <span>{isCycling ? 'Running Pipeline...' : 'Run Pipeline'}</span>
             </button>
           </div>
         </div>

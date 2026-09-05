@@ -19,7 +19,8 @@ import {
   User,
   CheckCircle2,
   XCircle,
-  Briefcase
+  Briefcase,
+  Send
 } from 'lucide-react';
 import { 
   JobListing, 
@@ -44,6 +45,7 @@ interface ResumeIntelligenceTabProps {
   selectedJobId: string | null;
   onSelectJobId: (id: string) => void;
   onOpenProfileModal: () => void;
+  onApplyJob?: (job: JobListing) => void;
 }
 
 export const ResumeIntelligenceTab: React.FC<ResumeIntelligenceTabProps> = ({
@@ -51,7 +53,8 @@ export const ResumeIntelligenceTab: React.FC<ResumeIntelligenceTabProps> = ({
   candidate,
   selectedJobId,
   onSelectJobId,
-  onOpenProfileModal
+  onOpenProfileModal,
+  onApplyJob
 }) => {
   const [currentJobId, setCurrentJobId] = useState<string>(selectedJobId || (jobs[0]?.id ?? ''));
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
@@ -326,7 +329,24 @@ export const ResumeIntelligenceTab: React.FC<ResumeIntelligenceTabProps> = ({
                 <span className="text-slate-400">Source:</span>
                 <span className="text-slate-300 font-mono">{selectedJob.source}</span>
               </div>
+
+              {selectedJob.application_status === 'applied' && (
+                <div className="flex justify-between text-emerald-400 font-semibold pt-1 border-t border-slate-800">
+                  <span>Status:</span>
+                  <span>Applied {selectedJob.applied_date ? `(${selectedJob.applied_date})` : ''} ✓</span>
+                </div>
+              )}
             </div>
+          )}
+
+          {selectedJob && onApplyJob && (
+            <button
+              onClick={() => onApplyJob(selectedJob)}
+              className="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm transition"
+            >
+              <Send className="w-3.5 h-3.5" />
+              <span>{selectedJob.application_status === 'applied' ? 'View / Update Application Tracking' : 'Apply to this Job Now'}</span>
+            </button>
           )}
 
           <button
@@ -429,7 +449,18 @@ export const ResumeIntelligenceTab: React.FC<ResumeIntelligenceTabProps> = ({
             </div>
 
             {/* Quick Export / View Controls */}
-            <div className="flex items-center gap-2 pb-2">
+            <div className="flex flex-wrap items-center gap-2 pb-2">
+              {selectedJob && onApplyJob && (
+                <button
+                  id="btn-apply-from-resume-tab"
+                  onClick={() => onApplyJob(selectedJob)}
+                  className="px-3 py-1 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-1.5 shadow-sm"
+                  title="Open application portals, tailored cover letter & tracker"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{selectedJob.application_status === 'applied' ? 'Applied ✓' : 'Apply to Job'}</span>
+                </button>
+              )}
               <button
                 onClick={() => setViewRawText(!viewRawText)}
                 className="px-2.5 py-1 text-xs font-medium rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition"

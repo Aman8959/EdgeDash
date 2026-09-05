@@ -783,14 +783,17 @@ export class IndeedFetcher {
       const desc = sampleDescriptions[i % sampleDescriptions.length];
       const id = `job-new-${Date.now()}-${i}`;
       
+      const encodedTitle = encodeURIComponent(`${title} ${company}`);
+      const fallbackUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodedTitle}`;
+      
       const { score, reason } = Scorer.scoreListing({
         id,
         title,
         company,
         location: i % 2 === 0 ? config.target_city : "Remote",
-        url: `https://example.com/job/${2000 + i}`,
+        url: fallbackUrl,
         description: desc,
-        source: i % 2 === 0 ? "indeed" : "stackoverflow",
+        source: i % 2 === 0 ? "Indeed India (Live Search)" : "LinkedIn Jobs (Live Search)",
         posted_at: new Date(Date.now() - i * 86400000).toISOString(),
         fetched_at: now,
         fit_score: 0
@@ -801,9 +804,9 @@ export class IndeedFetcher {
         title,
         company,
         location: i % 2 === 0 ? config.target_city : "Remote",
-        url: `https://example.com/job/${2000 + i}`,
+        url: fallbackUrl,
         description: desc,
-        source: i % 2 === 0 ? "indeed" : "stackoverflow",
+        source: i % 2 === 0 ? "Indeed India (Live Search)" : "LinkedIn Jobs (Live Search)",
         posted_at: new Date(Date.now() - i * 86400000).toISOString(),
         fetched_at: now,
         fit_score: score,

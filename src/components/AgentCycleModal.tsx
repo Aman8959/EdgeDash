@@ -19,7 +19,7 @@ interface AgentCycleModalProps {
 }
 
 const AGENTS_LIST = [
-  { name: 'indeed_fetcher', title: 'Indeed & Public Job Fetcher', desc: 'Scraping and ingesting latest market listings' },
+  { name: 'live_job_fetcher', title: 'Live Job Portal APIs (Jobicy & Remotive)', desc: 'Connecting to Jobicy v2 & Remotive public feeds for real-world job data' },
   { name: 'scorer', title: 'Fit Scorer', desc: 'Calculating keyword (30%) & skill (70%) alignment' },
   { name: 'gap_analyzer', title: 'Skill Gap Analyzer', desc: 'Extracting market demand vs candidate profile' },
   { name: 'verifier', title: 'Data Verifier & QA', desc: 'Validating scores, checking anomalies & schema consistency' },
@@ -44,7 +44,7 @@ export const AgentCycleModal: React.FC<AgentCycleModalProps> = ({
     setIsRunning(true);
     setCurrentStepIndex(0);
     setResults([]);
-    setLogs([`[${new Date().toLocaleTimeString()}] Starting EdgeDash 9-Agent Autonomous Cycle...`]);
+    setLogs([`[${new Date().toLocaleTimeString()}] Starting Career Intelligence Pipeline...`]);
 
     let step = 0;
     const interval = setInterval(() => {
@@ -64,7 +64,7 @@ export const AgentCycleModal: React.FC<AgentCycleModalProps> = ({
         setResults(prev => [...prev, res]);
         setLogs(prev => [
           ...prev,
-          `[${new Date().toLocaleTimeString()}] Agent [${agent.name}] completed (${records} records touched, ${timeSec}s)`
+          `[${new Date().toLocaleTimeString()}] Step [${agent.name}] completed (${records} records touched, ${timeSec}s)`
         ]);
 
         step++;
@@ -74,7 +74,7 @@ export const AgentCycleModal: React.FC<AgentCycleModalProps> = ({
         setIsRunning(false);
         setLogs(prev => [
           ...prev,
-          `[${new Date().toLocaleTimeString()}] EdgeDash 9-Agent Cycle Completed Successfully ✓`
+          `[${new Date().toLocaleTimeString()}] Career Intelligence Pipeline Completed Successfully ✓`
         ]);
         onRunComplete();
       }
@@ -100,7 +100,7 @@ export const AgentCycleModal: React.FC<AgentCycleModalProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-base sm:text-lg text-white flex items-center gap-2">
-                <span>9-Agent Autonomous Orchestrator</span>
+                <span>Career Intelligence Pipeline</span>
                 {isRunning ? (
                   <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 font-normal animate-pulse">
                     Running...

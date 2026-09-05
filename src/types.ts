@@ -78,6 +78,11 @@ export interface JobListing {
   fetched_at: string;
   fit_score: number;
   fit_reason?: string;
+  application_status?: 'not_applied' | 'applied' | 'interviewing' | 'offered' | 'rejected';
+  applied_date?: string;
+  application_notes?: string;
+  application_ref?: string;
+  applied_channel?: 'in_app_direct' | 'email_direct' | 'external_portal';
 }
 
 export interface SkillGap {
