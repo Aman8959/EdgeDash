@@ -1,0 +1,64 @@
+{
+  "entities": {
+    "UserProfile": {
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "lastLoginAt": { "type": "string" }
+      },
+      "required": ["email", "createdAt"]
+    },
+    "CandidateData": {
+      "type": "object",
+      "properties": {
+        "candidate": { "type": "object" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["candidate", "updatedAt"]
+    },
+    "UserConfig": {
+      "type": "object",
+      "properties": {
+        "config": { "type": "object" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["config", "updatedAt"]
+    },
+    "ApplicationRecord": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "jobId": { "type": "string" },
+        "company": { "type": "string" },
+        "title": { "type": "string" },
+        "status": { "type": "string" },
+        "appliedAt": { "type": "string" },
+        "applicationRef": { "type": "string" },
+        "method": { "type": "string" },
+        "notes": { "type": "string" }
+      },
+      "required": ["id", "jobId", "company", "title", "status", "appliedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile metadata"
+    },
+    "/users/{userId}/data/candidate": {
+      "schema": "CandidateData",
+      "description": "User verified candidate profile"
+    },
+    "/users/{userId}/data/config": {
+      "schema": "UserConfig",
+      "description": "User search & agent configuration"
+    },
+    "/users/{userId}/applications/{appId}": {
+      "schema": "ApplicationRecord",
+      "description": "User job applications history"
+    }
+  }
+}

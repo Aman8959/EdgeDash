@@ -42,7 +42,18 @@ Unlike generic LLM resume tools that invent unverified facts, EdgeDash uses a st
 - **Fit Score Distribution**: Visual breakdown of Good, Hot, and Moderate matches.
 - **Actionable Strategic Insights**: Priority learning pathways and market recommendations.
 
-### 5. Multi-Format Resume Exporter
+### 5. Secure Authentication & Cloud Persistence (Firebase)
+- **User Registration & Sign In**: Dual-mode email/password registration with validation alongside 1-Click Google OAuth authentication.
+- **Persistent User Data**: Stores profile competencies, user search configurations, and job applications securely in Google Cloud Firestore with Attribute-Based Access Control (ABAC).
+- **Session Continuity**: Multi-device access with authenticated user state management and quick sign out.
+
+### 6. Trust, Compliance & Legal Hub
+- **Interactive FAQs**: Clarifications on live job scraping, zero-hallucination verification, dual-matrix fit scoring, and direct application dossiers.
+- **Terms of Service**: Formal platform guidelines, fair usage, intellectual property, and career disclaimer.
+- **Privacy Policy**: End-to-end data isolation, zero selling of personal candidate information, and encryption standards.
+- **Comprehensive Platform Footer**: Persistent across both the entry authentication view and the authenticated workspace.
+
+### 7. Multi-Format Resume Exporter
 - **Print / PDF Direct Export**: Clean, print-ready document formatted for ATS scanners.
 - **Formatted Plain Text (TXT)**: Clean layout for online application forms.
 - **Styled HTML**: Portable rich document.

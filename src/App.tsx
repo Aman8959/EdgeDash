@@ -9,6 +9,9 @@ import { AgentCycleModal } from './components/AgentCycleModal';
 import { CandidateProfileModal } from './components/CandidateProfileModal';
 import { AddJobModal } from './components/AddJobModal';
 import { ApplyJobModal } from './components/ApplyJobModal';
+import { AuthScreen } from './components/AuthScreen';
+import { Footer } from './components/Footer';
+import { InfoModal, InfoModalType } from './components/InfoModal';
 
 import { 
   defaultConfig, 
@@ -19,8 +22,25 @@ import {
 import { CandidateProfile, Config, JobListing, SkillGap } from './types';
 import { IndeedFetcher, Scorer, GapAnalyzer, Verifier } from './services/agents';
 import { LiveJobService } from './services/liveJobsService';
+import { 
+  subscribeToAuth, 
+  logoutUser, 
+  testFirestoreConnection,
+  saveCandidateProfileToFirestore,
+  loadCandidateProfileFromFirestore,
+  saveConfigToFirestore,
+  loadConfigFromFirestore,
+  recordApplicationInFirestore
+} from './services/firebase';
+import { User as FirebaseUser } from 'firebase/auth';
+import { Bot } from 'lucide-react';
 
 export function App() {
+  // Authentication State
+  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+  const [authChecked, setAuthChecked] = useState<boolean>(false);
+  const [infoModalType, setInfoModalType] = useState<InfoModalType>(null);
+
   // State initialization with localStorage fallback
   const [config, setConfig] = useState<Config>(() => {
     const saved = localStorage.getItem('edgedash_config');
@@ -82,6 +102,55 @@ export function App() {
   // Live API Fetching State
   const [isFetchingLive, setIsFetchingLive] = useState<boolean>(false);
   const [liveFetchSuccessMsg, setLiveFetchSuccessMsg] = useState<string | null>(null);
+
+  // Test connection to Firestore & Listen to Auth state changes
+  useEffect(() => {
+    testFirestoreConnection();
+
+    const unsubscribe = subscribeToAuth(async (user) => {
+      setCurrentUser(user);
+      setAuthChecked(true);
+
+      if (user) {
+        // Load user-specific profile and config from Firestore
+        try {
+          const userProfile = await loadCandidateProfileFromFirestore(user.uid);
+          if (userProfile) {
+            setCandidate(userProfile);
+          } else {
+            // First time user: save initial profile to Firestore
+            const initialForUser: CandidateProfile = {
+              ...candidate,
+              full_name: user.displayName || candidate.full_name || 'Aman Kumar Yadav',
+              email: user.email || candidate.email
+            };
+            setCandidate(initialForUser);
+            await saveCandidateProfileToFirestore(user.uid, initialForUser);
+          }
+
+          const userConfig = await loadConfigFromFirestore(user.uid);
+          if (userConfig) {
+            setConfig(userConfig);
+          } else {
+            await saveConfigToFirestore(user.uid, config);
+          }
+        } catch (e) {
+          console.warn('Firestore initial data sync notice:', e);
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    try {
+      await logoutUser();
+      setCurrentUser(null);
+    } catch (e) {
+      console.error('Sign out error:', e);
+    }
+  };
 
   // Handler: Fetch Real Live Jobs from Jobicy & Remotive APIs
   const handleFetchLiveJobs = async (searchKeyword?: string) => {
@@ -149,6 +218,11 @@ export function App() {
     const newJobs = jobs.map(j => j.id === updatedJob.id ? updatedJob : j);
     setJobs(newJobs);
     setApplyingJob(updatedJob);
+
+    // If applied, record to Firestore
+    if (currentUser && updatedJob.application_status === 'applied') {
+      recordApplicationInFirestore(currentUser.uid, updatedJob, 'direct_in_app');
+    }
   };
 
   // Handler: Add custom job
@@ -181,6 +255,9 @@ export function App() {
       ]
     };
     setCandidate(updatedProfile);
+    if (currentUser) {
+      saveCandidateProfileToFirestore(currentUser.uid, updatedProfile);
+    }
 
     // Re-score jobs with updated candidate skills
     const updatedConfig: Config = {
@@ -188,6 +265,9 @@ export function App() {
       my_skills: [...config.my_skills, skillName]
     };
     setConfig(updatedConfig);
+    if (currentUser) {
+      saveConfigToFirestore(currentUser.uid, updatedConfig);
+    }
 
     const rescoredJobs = jobs.map(j => {
       const { score, reason } = Scorer.scoreListing(j, updatedConfig);
@@ -239,6 +319,9 @@ export function App() {
   // Handler: Save updated Master Profile
   const handleSaveProfile = (updated: CandidateProfile) => {
     setCandidate(updated);
+    if (currentUser) {
+      saveCandidateProfileToFirestore(currentUser.uid, updated);
+    }
 
     // Synchronize candidate skills and primary target role into config
     const updatedSkills = updated.skills.map(s => s.skill_name);
@@ -248,6 +331,9 @@ export function App() {
       target_role: updated.target_roles[0] || config.target_role
     };
     setConfig(updatedConfig);
+    if (currentUser) {
+      saveConfigToFirestore(currentUser.uid, updatedConfig);
+    }
 
     // Re-score all listings against updated profile
     const rescoredJobs = jobs.map(j => {
@@ -266,9 +352,39 @@ export function App() {
     setIsCycleModalOpen(true);
   };
 
+  // If Auth state is still being checked initially
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-200">
+        <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-xl shadow-blue-500/25 animate-pulse mb-4">
+          <Bot className="w-7 h-7" />
+        </div>
+        <p className="text-sm font-semibold text-slate-300">Initializing EdgeDash...</p>
+        <p className="text-xs text-slate-500 mt-1">Connecting to Firebase Auth & Cloud Firestore</p>
+      </div>
+    );
+  }
+
+  // If user is not authenticated: Show Register / Login Screen first!
+  if (!currentUser) {
+    return (
+      <>
+        <AuthScreen 
+          onAuthSuccess={() => {}}
+          onOpenInfo={(type) => setInfoModalType(type)}
+        />
+        <InfoModal 
+          type={infoModalType} 
+          onClose={() => setInfoModalType(null)} 
+        />
+      </>
+    );
+  }
+
+  // Authenticated Application Workspace
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col">
-      {/* Navigation Header */}
+      {/* Navigation Header with current user status & sign out */}
       <Navbar
         config={config}
         candidate={candidate}
@@ -278,6 +394,9 @@ export function App() {
         onOpenProfile={() => setIsProfileModalOpen(true)}
         onOpenAddJob={() => setIsAddJobModalOpen(true)}
         isCycling={isCycling}
+        currentUser={currentUser}
+        onSignOut={handleSignOut}
+        onOpenInfo={(type) => setInfoModalType(type)}
       />
 
       {/* Main Content Area */}
@@ -333,21 +452,18 @@ export function App() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-800 bg-slate-950/60 py-4 text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div>EdgeDash Career Intelligence Platform</div>
-          <div className="flex items-center gap-4 text-slate-400">
-            <span>Role: {config.target_role}</span>
-            <span>•</span>
-            <span>Target: {config.target_city}</span>
-            <span>•</span>
-            <span>Zero Hallucination Pipeline</span>
-          </div>
-        </div>
-      </footer>
+      {/* Comprehensive Application Footer with FAQs, Terms, and Privacy */}
+      <Footer 
+        onOpenInfo={(type) => setInfoModalType(type)} 
+        isAuthenticated={true} 
+      />
 
       {/* Modals */}
+      <InfoModal
+        type={infoModalType}
+        onClose={() => setInfoModalType(null)}
+      />
+
       <AgentCycleModal
         isOpen={isCycleModalOpen}
         onClose={() => setIsCycleModalOpen(false)}

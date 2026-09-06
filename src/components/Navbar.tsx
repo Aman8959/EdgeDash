@@ -7,9 +7,13 @@ import {
   Sparkles, 
   Layers,
   MapPin,
-  Briefcase
+  Briefcase,
+  LogOut,
+  HelpCircle
 } from 'lucide-react';
 import { Config, CandidateProfile } from '../types';
+import { User as FirebaseUser } from 'firebase/auth';
+import { InfoModalType } from './InfoModal';
 
 interface NavbarProps {
   config: Config;
@@ -20,6 +24,9 @@ interface NavbarProps {
   onOpenProfile: () => void;
   onOpenAddJob: () => void;
   isCycling: boolean;
+  currentUser?: FirebaseUser | null;
+  onSignOut?: () => void;
+  onOpenInfo?: (type: InfoModalType) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -30,7 +37,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   onRunCycle,
   onOpenProfile,
   onOpenAddJob,
-  isCycling
+  isCycling,
+  currentUser,
+  onSignOut,
+  onOpenInfo
 }) => {
   const tabs = [
     { id: 'jobs', label: '📋 Top Jobs' },
@@ -39,6 +49,9 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'insights', label: '💡 Insights' },
     { id: 'resume', label: '📄 Resume Intelligence' }
   ];
+
+  const userDisplayName = currentUser?.displayName || candidate.full_name || currentUser?.email?.split('@')[0] || 'Aman Kumar Yadav';
+  const userInitial = userDisplayName.charAt(0).toUpperCase();
 
   return (
     <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-30">
@@ -65,6 +78,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {onOpenInfo && (
+              <button
+                id="btn-nav-faqs"
+                onClick={() => onOpenInfo('faqs')}
+                className="hidden md:inline-flex items-center gap-1 px-2.5 py-1.5 text-xs text-slate-400 hover:text-slate-200 rounded-lg hover:bg-slate-800 transition"
+                title="View FAQs & Help"
+              >
+                <HelpCircle className="w-3.5 h-3.5 text-blue-400" />
+                <span>FAQs</span>
+              </button>
+            )}
+
             <button
               id="btn-add-job"
               onClick={onOpenAddJob}
@@ -94,6 +119,38 @@ export const Navbar: React.FC<NavbarProps> = ({
               <Play className={`w-4 h-4 ${isCycling ? 'animate-spin' : ''}`} />
               <span>{isCycling ? 'Running Pipeline...' : 'Run Pipeline'}</span>
             </button>
+
+            {/* Authenticated User Avatar & Sign Out */}
+            {currentUser && (
+              <div className="flex items-center gap-2 pl-2 border-l border-slate-800">
+                <div 
+                  className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white text-xs font-bold ring-2 ring-blue-500/30 shrink-0"
+                  title={currentUser.email || userDisplayName}
+                >
+                  {currentUser.photoURL ? (
+                    <img 
+                      src={currentUser.photoURL} 
+                      alt={userDisplayName} 
+                      className="w-full h-full rounded-full object-cover" 
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <span>{userInitial}</span>
+                  )}
+                </div>
+
+                {onSignOut && (
+                  <button
+                    id="btn-sign-out"
+                    onClick={onSignOut}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-slate-800/80 transition"
+                    title="Sign Out of EdgeDash"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
