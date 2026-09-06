@@ -24,7 +24,7 @@ export const getEmptyConfig = (): Config => ({
   keywords: [],
   my_skills: [],
   experience_years: 0,
-  min_fit_score: 50
+  min_fit_score: 0
 });
 
 export const defaultConfig: Config = {
@@ -55,7 +55,7 @@ export const defaultConfig: Config = {
     "AI Automation"
   ],
   experience_years: 2,
-  min_fit_score: 55
+  min_fit_score: 30
 };
 
 export const defaultCandidateProfile: CandidateProfile = {

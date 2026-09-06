@@ -308,7 +308,7 @@ export const ResumeIntelligenceTab: React.FC<ResumeIntelligenceTabProps> = ({
             }}
             className="w-full bg-slate-900 border border-slate-700 text-xs sm:text-sm text-slate-200 p-2.5 rounded-lg focus:outline-none focus:border-blue-500 font-medium"
           >
-            {jobs.map((job) => (
+            {Array.from(new Map(jobs.map(j => [j.id, j])).values()).map((job) => (
               <option key={job.id} value={job.id}>
                 {job.title} — {job.company} (Fit: {job.fit_score}%)
               </option>

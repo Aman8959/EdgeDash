@@ -659,21 +659,71 @@ export class ATSOptimizer {
 // ==========================================
 export class Scorer {
   static scoreListing(listing: JobListing, config: Config): { score: number; reason: string } {
-    const text = `${listing.title} ${listing.description}`.toLowerCase();
-    const keywordsLower = (config.keywords || []).map(k => k.toLowerCase());
-    const skillsLower = (config.my_skills || []).map(s => s.toLowerCase());
+    const title = (listing.title || '').toLowerCase();
+    const desc = (listing.description || '').toLowerCase();
+    const text = `${title} ${desc}`;
+
+    const keywordsLower = (config.keywords || []).map(k => k.toLowerCase().trim()).filter(Boolean);
+    const skillsLower = (config.my_skills || []).map(s => s.toLowerCase().trim()).filter(Boolean);
+
+    // If neither keywords nor skills are configured yet in candidate profile
+    if (keywordsLower.length === 0 && skillsLower.length === 0) {
+      if (listing.fit_score && listing.fit_score > 0) {
+        return {
+          score: listing.fit_score,
+          reason: listing.fit_reason || "Industry benchmark relevance"
+        };
+      }
+      const targetRole = (config.target_role || '').toLowerCase();
+      const roleMatch = targetRole && (title.includes(targetRole) || desc.includes(targetRole));
+      const fallbackScore = roleMatch ? 88 : 78;
+      return {
+        score: fallbackScore,
+        reason: roleMatch ? `Matches target role: ${config.target_role}` : "General industry alignment"
+      };
+    }
 
     const keywordMatches = keywordsLower.filter(k => text.includes(k)).length;
     const skillMatches = skillsLower.filter(s => text.includes(s)).length;
 
-    const kwRatio = keywordsLower.length > 0 ? keywordMatches / keywordsLower.length : 0;
-    const skRatio = skillsLower.length > 0 ? skillMatches / skillsLower.length : 0;
+    let scoreFloat: number;
+    if (keywordsLower.length > 0 && skillsLower.length > 0) {
+      const kwRatio = keywordMatches / keywordsLower.length;
+      const skRatio = skillMatches / skillsLower.length;
+      scoreFloat = (skRatio * 70) + (kwRatio * 20);
+    } else if (skillsLower.length > 0) {
+      const skRatio = skillMatches / skillsLower.length;
+      scoreFloat = (skRatio * 85);
+    } else {
+      const kwRatio = keywordMatches / keywordsLower.length;
+      scoreFloat = (kwRatio * 85);
+    }
 
-    const scoreFloat = kwRatio * 30 + skRatio * 70;
-    const score = Math.min(100, Math.max(0, Math.round(scoreFloat)));
+    // Target role title bonus
+    const targetRole = (config.target_role || '').toLowerCase();
+    if (targetRole && (title.includes(targetRole) || desc.includes(targetRole))) {
+      scoreFloat += 10;
+    }
 
-    const reason = `Keywords: ${keywordMatches}/${keywordsLower.length} | Skills: ${skillMatches}/${skillsLower.length}`;
-    return { score, reason };
+    // Minimum baseline score if at least 1 skill matched
+    if (skillMatches > 0 || keywordMatches > 0) {
+      scoreFloat = Math.max(scoreFloat, 45 + Math.min(skillMatches * 10, 45));
+    }
+
+    const score = Math.min(99, Math.max(25, Math.round(scoreFloat)));
+
+    let reasonParts: string[] = [];
+    if (skillsLower.length > 0) {
+      reasonParts.push(`Skills: ${skillMatches}/${skillsLower.length}`);
+    }
+    if (keywordsLower.length > 0) {
+      reasonParts.push(`Keywords: ${keywordMatches}/${keywordsLower.length}`);
+    }
+    if (reasonParts.length === 0) {
+      reasonParts.push("Role alignment");
+    }
+
+    return { score, reason: reasonParts.join(" | ") };
   }
 }
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Search, 
   Filter, 
@@ -42,18 +42,26 @@ export const TopJobsTab: React.FC<TopJobsTabProps> = ({
   isFetchingLive = false,
   liveFetchMsg = null
 }) => {
-  const [minFitScore, setMinFitScore] = useState<number>(config.min_fit_score);
+  const [minFitScore, setMinFitScore] = useState<number>(() => typeof config?.min_fit_score === 'number' ? config.min_fit_score : 0);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
+
+  // Synchronize filter when config updates
+  useEffect(() => {
+    if (typeof config?.min_fit_score === 'number') {
+      setMinFitScore(config.min_fit_score);
+    }
+  }, [config?.min_fit_score]);
 
   // Derive all unique sources present in the jobs data dynamically
   const availableSources = Array.from(new Set(jobs.map(j => j.source))).filter(Boolean);
 
   // Filter jobs
   const filteredJobs = jobs.filter(job => {
-    if (job.fit_score < minFitScore) return false;
+    const score = typeof job.fit_score === 'number' ? job.fit_score : 0;
+    if (score < minFitScore) return false;
     if (sourceFilter !== 'all' && job.source !== sourceFilter) return false;
     if (statusFilter === 'applied') {
       if (job.application_status !== 'applied' && job.application_status !== 'interviewing' && job.application_status !== 'offered') return false;
@@ -73,16 +81,27 @@ export const TopJobsTab: React.FC<TopJobsTabProps> = ({
     return true;
   });
 
+  // Ensure filteredJobs has strictly unique IDs before rendering
+  const uniqueFilteredJobs = useMemo(() => {
+    const seen = new Set<string>();
+    return filteredJobs.filter(job => {
+      if (!job || !job.id || seen.has(job.id)) return false;
+      seen.add(job.id);
+      return true;
+    });
+  }, [filteredJobs]);
+
   const appliedCount = jobs.filter(j => j.application_status === 'applied' || j.application_status === 'interviewing' || j.application_status === 'offered').length;
 
   const getBadgeInfo = (score: number) => {
-    if (score >= 50) {
-      return { label: '🔥 HOT', bg: 'bg-rose-500/10 text-rose-400 border-rose-500/30' };
+    const s = Number(score) || 0;
+    if (s >= 75) {
+      return { label: '🔥 STRONG MATCH', bg: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' };
     }
-    if (score >= 40) {
-      return { label: '✓ GOOD', bg: 'bg-amber-500/10 text-amber-400 border-amber-500/30' };
+    if (s >= 50) {
+      return { label: '✓ GOOD MATCH', bg: 'bg-blue-500/10 text-blue-400 border-blue-500/30' };
     }
-    return { label: '• OK', bg: 'bg-blue-500/10 text-blue-400 border-blue-500/30' };
+    return { label: '• RELEVANT', bg: 'bg-amber-500/10 text-amber-400 border-amber-500/30' };
   };
 
   return (
@@ -147,7 +166,7 @@ export const TopJobsTab: React.FC<TopJobsTabProps> = ({
             <h2 className="text-xl font-bold text-white flex items-center gap-2">
               <span>📋 Top Job Matches</span>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-600/20 text-blue-300 border border-blue-500/30">
-                {filteredJobs.length} matching
+                {uniqueFilteredJobs.length} matching
               </span>
             </h2>
             {appliedCount > 0 && (
@@ -217,7 +236,7 @@ export const TopJobsTab: React.FC<TopJobsTabProps> = ({
       </div>
 
       {/* Jobs List */}
-      {filteredJobs.length === 0 ? (
+      {uniqueFilteredJobs.length === 0 ? (
         <div className="bg-slate-800/30 border border-slate-800 rounded-xl p-12 text-center">
           <AlertCircle className="w-12 h-12 text-slate-500 mx-auto mb-3" />
           <h3 className="text-base font-semibold text-slate-300">No jobs found matching your filter</h3>
@@ -233,7 +252,7 @@ export const TopJobsTab: React.FC<TopJobsTabProps> = ({
         </div>
       ) : (
         <div className="space-y-4">
-          {filteredJobs.map((job, idx) => {
+          {uniqueFilteredJobs.map((job, idx) => {
             const badge = getBadgeInfo(job.fit_score);
             const isExpanded = expandedJobId === job.id;
             const isApplied = job.application_status === 'applied';

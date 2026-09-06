@@ -37,6 +37,57 @@ import {
 } from './services/firebase';
 import { Bot } from 'lucide-react';
 
+/**
+ * Deduplicates job listings strictly by id, direct application URL, and normalized title+company.
+ */
+export function deduplicateJobs(jobList: JobListing[]): JobListing[] {
+  const seenIds = new Set<string>();
+  const seenSignatures = new Set<string>();
+  const seenUrls = new Set<string>();
+  const result: JobListing[] = [];
+
+  for (const job of jobList) {
+    if (!job) continue;
+    const cleanId = (job.id || '').trim();
+    if (!cleanId) continue;
+
+    // Direct ID collision
+    if (seenIds.has(cleanId)) {
+      continue;
+    }
+
+    // Direct URL collision (if valid job link and not generic base url)
+    const cleanUrl = (job.url || '').trim().toLowerCase();
+    const isSpecificUrl = cleanUrl.startsWith('http') && 
+      !cleanUrl.endsWith('.com') && 
+      !cleanUrl.endsWith('.com/') && 
+      cleanUrl.length > 22;
+    if (isSpecificUrl && seenUrls.has(cleanUrl)) {
+      continue;
+    }
+
+    // Normalized title & company signature
+    const normTitle = (job.title || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const normCompany = (job.company || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const signature = `${normTitle}___${normCompany}`;
+
+    if (normTitle.length > 3 && normCompany.length > 2 && seenSignatures.has(signature)) {
+      continue;
+    }
+
+    seenIds.add(cleanId);
+    if (isSpecificUrl) {
+      seenUrls.add(cleanUrl);
+    }
+    if (normTitle.length > 3 && normCompany.length > 2) {
+      seenSignatures.add(signature);
+    }
+    result.push(job);
+  }
+
+  return result;
+}
+
 export function App() {
   // Authentication State
   const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
@@ -85,7 +136,12 @@ export function App() {
 
       // User logged in: Load user-specific data
       try {
-        const isDemo = user.email === 'candidate.demo@edgedash.ai';
+        const isAmanOrDemo = 
+          !user.email || 
+          user.email.toLowerCase().includes('aman') || 
+          user.email === 'candidate.demo@edgedash.ai' ||
+          Boolean(user.displayName && user.displayName.toLowerCase().includes('aman'));
+
         const userProfKey = `edgedash_candidate_${user.uid}`;
         const userConfKey = `edgedash_config_${user.uid}`;
         const userJobsKey = `edgedash_jobs_${user.uid}`;
@@ -95,20 +151,24 @@ export function App() {
         const firestoreConfig = await loadConfigFromFirestore(user.uid);
 
         let activeProfile: CandidateProfile;
-        if (firestoreProfile) {
+        if (firestoreProfile && firestoreProfile.skills && firestoreProfile.skills.length > 0) {
           activeProfile = firestoreProfile;
         } else {
           // Check user-scoped local storage
           const localStr = localStorage.getItem(userProfKey);
+          let parsedLocal: CandidateProfile | null = null;
           if (localStr) {
-            try {
-              activeProfile = JSON.parse(localStr);
-            } catch (e) {
-              activeProfile = isDemo ? defaultCandidateProfile : getEmptyCandidateProfile(user.displayName || '', user.email || '');
-            }
-          } else if (isDemo) {
-            activeProfile = defaultCandidateProfile;
-            await saveCandidateProfileToFirestore(user.uid, defaultCandidateProfile);
+            try { parsedLocal = JSON.parse(localStr); } catch (e) {}
+          }
+          if (parsedLocal && parsedLocal.skills && parsedLocal.skills.length > 0) {
+            activeProfile = parsedLocal;
+          } else if (isAmanOrDemo) {
+            activeProfile = {
+              ...defaultCandidateProfile,
+              email: user.email || defaultCandidateProfile.email,
+              full_name: user.displayName || defaultCandidateProfile.full_name
+            };
+            await saveCandidateProfileToFirestore(user.uid, activeProfile);
           } else {
             // New user: clean empty profile so they can fill their own details
             activeProfile = getEmptyCandidateProfile(user.displayName || '', user.email || '');
@@ -119,23 +179,20 @@ export function App() {
         try { localStorage.setItem(userProfKey, JSON.stringify(activeProfile)); } catch (e) {}
 
         let activeConfig: Config;
-        if (firestoreConfig) {
+        if (firestoreConfig && firestoreConfig.my_skills && firestoreConfig.my_skills.length > 0) {
           activeConfig = firestoreConfig;
         } else {
-          const localConfStr = localStorage.getItem(userConfKey);
-          if (localConfStr) {
-            try {
-              activeConfig = JSON.parse(localConfStr);
-            } catch (e) {
-              activeConfig = isDemo ? defaultConfig : getEmptyConfig();
-            }
-          } else if (isDemo) {
-            activeConfig = defaultConfig;
-            await saveConfigToFirestore(user.uid, defaultConfig);
-          } else {
-            activeConfig = getEmptyConfig();
-            await saveConfigToFirestore(user.uid, activeConfig);
-          }
+          const profileSkills = (activeProfile.skills || []).map(s => s.skill_name);
+          const targetRole = (activeProfile.target_roles && activeProfile.target_roles[0]) || (isAmanOrDemo ? defaultConfig.target_role : 'Data Analyst');
+          activeConfig = {
+            target_role: targetRole,
+            target_city: activeProfile.location || (isAmanOrDemo ? defaultConfig.target_city : 'Remote'),
+            keywords: profileSkills.length > 0 ? profileSkills.slice(0, 10) : (isAmanOrDemo ? defaultConfig.keywords : []),
+            my_skills: profileSkills.length > 0 ? profileSkills : (isAmanOrDemo ? defaultConfig.my_skills : []),
+            experience_years: activeProfile.experience?.length || (isAmanOrDemo ? defaultConfig.experience_years : 1),
+            min_fit_score: 30
+          };
+          await saveConfigToFirestore(user.uid, activeConfig);
         }
         setConfig(activeConfig);
         try { localStorage.setItem(userConfKey, JSON.stringify(activeConfig)); } catch (e) {}
@@ -152,14 +209,18 @@ export function App() {
           activeJobs = defaultInitialListings;
         }
 
+        // Deduplicate jobs immediately to clean up any past collisions
+        activeJobs = deduplicateJobs(activeJobs);
+
         // Score jobs based on the loaded user config
         const rescored = activeJobs.map(j => {
           const { score, reason } = Scorer.scoreListing(j, activeConfig);
           return { ...j, fit_score: score, fit_reason: reason };
         });
         rescored.sort((a, b) => b.fit_score - a.fit_score);
-        setJobs(rescored);
-        try { localStorage.setItem(userJobsKey, JSON.stringify(rescored)); } catch (e) {}
+        const finalDeduplicated = deduplicateJobs(rescored);
+        setJobs(finalDeduplicated);
+        try { localStorage.setItem(userJobsKey, JSON.stringify(finalDeduplicated)); } catch (e) {}
 
         const gaps = GapAnalyzer.analyze(rescored, activeConfig);
         setSkillGaps(gaps);
@@ -208,17 +269,15 @@ export function App() {
     try {
       const liveJobs = await LiveJobService.fetchLiveJobs(searchKeyword || config.target_role, config);
       if (liveJobs.length > 0) {
-        const existingKeys = new Set(jobs.map(j => `${j.title.toLowerCase()}___${j.company.toLowerCase()}`));
-        const newUnique = liveJobs.filter(j => !existingKeys.has(`${j.title.toLowerCase()}___${j.company.toLowerCase()}`));
-        
-        const merged = [...newUnique, ...jobs];
+        const merged = deduplicateJobs([...liveJobs, ...jobs]);
         merged.sort((a, b) => b.fit_score - a.fit_score);
         setJobs(merged);
         
         const gaps = GapAnalyzer.analyze(merged, config);
         setSkillGaps(gaps);
 
-        setLiveFetchSuccessMsg(`⚡ Connected to Jobicy & Remotive APIs! Ingested ${liveJobs.length} verified listings (${newUnique.length} brand new added).`);
+        const newCount = Math.max(0, merged.length - jobs.length);
+        setLiveFetchSuccessMsg(`⚡ Connected to Jobicy & Remotive APIs! Ingested ${liveJobs.length} verified listings (${newCount} new added).`);
         setTimeout(() => setLiveFetchSuccessMsg(null), 6500);
       } else {
         setLiveFetchSuccessMsg('API query completed. Current listings are already up to date with live feeds.');
@@ -288,7 +347,7 @@ export function App() {
 
   // Handler: Add custom job
   const handleAddJob = (newJob: JobListing) => {
-    const updated = [newJob, ...jobs];
+    const updated = deduplicateJobs([newJob, ...jobs]);
     setJobs(updated);
     // Recalculate gaps
     const newGaps = GapAnalyzer.analyze(updated, config);
@@ -354,9 +413,7 @@ export function App() {
     const combinedNew = realNewJobs.length > 0 ? [...realNewJobs, ...newSampleJobs] : newSampleJobs;
 
     // Merge new unique jobs
-    const existingIds = new Set(jobs.map(j => `${j.title.toLowerCase()}___${j.company.toLowerCase()}`));
-    const uniqueNew = combinedNew.filter(j => !existingIds.has(`${j.title.toLowerCase()}___${j.company.toLowerCase()}`));
-    const merged = [...uniqueNew, ...jobs];
+    const merged = deduplicateJobs([...combinedNew, ...jobs]);
 
     // Re-score all
     const scored = merged.map(j => {
@@ -390,9 +447,13 @@ export function App() {
     // Synchronize candidate skills and primary target role into config
     const updatedSkills = (updated.skills || []).map(s => s.skill_name);
     const targetRole = (updated.target_roles && updated.target_roles[0]) || config.target_role || '';
+    const updatedKeywords = (config.keywords && config.keywords.length > 0)
+      ? config.keywords
+      : updatedSkills.slice(0, 10);
     const updatedConfig: Config = {
       ...config,
       my_skills: updatedSkills,
+      keywords: updatedKeywords,
       target_role: targetRole,
       target_city: updated.location || config.target_city || ''
     };

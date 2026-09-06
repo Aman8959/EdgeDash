@@ -61,8 +61,14 @@ export class LiveJobService {
             rawListing.fit_score = score;
             rawListing.fit_reason = reason;
 
-            // Only add if not already in list
-            if (!jobs.some(j => j.title.toLowerCase() === rawListing.title.toLowerCase() && j.company.toLowerCase() === rawListing.company.toLowerCase())) {
+            // Only add if not already in list by ID, URL, or normalized title/company
+            const isDuplicate = jobs.some(j => 
+              j.id === rawListing.id || 
+              (j.url && rawListing.url && j.url === rawListing.url) ||
+              (j.title.toLowerCase().trim() === rawListing.title.toLowerCase().trim() && 
+               j.company.toLowerCase().trim() === rawListing.company.toLowerCase().trim())
+            );
+            if (!isDuplicate) {
               jobs.push(rawListing);
             }
           }
@@ -99,7 +105,13 @@ export class LiveJobService {
             rawListing.fit_score = score;
             rawListing.fit_reason = reason;
 
-            if (!jobs.some(j => j.title.toLowerCase() === rawListing.title.toLowerCase() && j.company.toLowerCase() === rawListing.company.toLowerCase())) {
+            const isDuplicate = jobs.some(j => 
+              j.id === rawListing.id || 
+              (j.url && rawListing.url && j.url === rawListing.url) ||
+              (j.title.toLowerCase().trim() === rawListing.title.toLowerCase().trim() && 
+               j.company.toLowerCase().trim() === rawListing.company.toLowerCase().trim())
+            );
+            if (!isDuplicate) {
               jobs.push(rawListing);
             }
           }
@@ -142,7 +154,13 @@ export class LiveJobService {
             rawListing.fit_score = score;
             rawListing.fit_reason = reason;
 
-            if (!jobs.some(j => j.title.toLowerCase() === rawListing.title.toLowerCase() && j.company.toLowerCase() === rawListing.company.toLowerCase())) {
+            const isArbeitDuplicate = jobs.some(j => 
+              j.id === rawListing.id || 
+              (j.url && rawListing.url && j.url === rawListing.url) ||
+              (j.title.toLowerCase().trim() === rawListing.title.toLowerCase().trim() && 
+               j.company.toLowerCase().trim() === rawListing.company.toLowerCase().trim())
+            );
+            if (!isArbeitDuplicate) {
               jobs.push(rawListing);
             }
           }
