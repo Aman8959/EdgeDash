@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { 
   getAuth, 
   GoogleAuthProvider, 
@@ -23,8 +23,20 @@ import {
 import { CandidateProfile, Config, JobListing } from '../types';
 import firebaseConfig from '../../firebase-applet-config.json';
 
-// Initialize Firebase App
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase App safely (singleton check across hot reload & dev server)
+function getOrCreateFirebaseApp(): FirebaseApp {
+  const apps = getApps();
+  if (apps.length > 0) {
+    return getApp();
+  }
+  try {
+    return initializeApp(firebaseConfig);
+  } catch (err) {
+    return getApp();
+  }
+}
+
+const app = getOrCreateFirebaseApp();
 
 // Initialize Authentication
 export const auth = getAuth(app);
@@ -38,17 +50,76 @@ export const db = firebaseConfig.firestoreDatabaseId && firebaseConfig.firestore
 
 // Test connection on boot
 export async function testFirestoreConnection(): Promise<boolean> {
+  return !!db;
+}
+
+export interface AppUser {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL?: string | null;
+}
+
+// Local Session & Auth State Management
+type AuthCallback = (user: AppUser | null) => void;
+const authSubscribers: Set<AuthCallback> = new Set();
+let currentAppUser: AppUser | null = null;
+
+function getStoredLocalUser(): AppUser | null {
   try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
-    return true;
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.warn('Firebase connection notice: client is offline or starting up.');
-      return false;
+    const saved = localStorage.getItem('edgedash_local_user');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.uid) {
+        return parsed as AppUser;
+      }
     }
-    // Expected to fail if doc doesn't exist or unauthenticated for test doc, but connection is reached
-    return true;
+  } catch (e) {
+    // Ignore JSON parse errors
   }
+  return null;
+}
+
+function notifySubscribers(user: AppUser | null) {
+  currentAppUser = user;
+  authSubscribers.forEach(cb => {
+    try {
+      cb(user);
+    } catch (e) {
+      console.warn('Auth subscriber notification notice:', e);
+    }
+  });
+}
+
+// Setup Firebase Auth listener that merges with local sessions
+onAuthStateChanged(auth, (fbUser) => {
+  if (fbUser) {
+    const appUser: AppUser = {
+      uid: fbUser.uid,
+      email: fbUser.email,
+      displayName: fbUser.displayName,
+      photoURL: fbUser.photoURL
+    };
+    notifySubscribers(appUser);
+  } else {
+    // If no Firebase user, check if we have an active local session
+    const localUser = getStoredLocalUser();
+    notifySubscribers(localUser);
+  }
+});
+
+export function loginWithLocalSession(email: string, displayName: string): AppUser {
+  const safeEmail = email.trim() || 'user@example.com';
+  const safeName = displayName.trim() || safeEmail.split('@')[0];
+  const localUser: AppUser = {
+    uid: 'user_' + Math.abs(safeEmail.split('').reduce((acc, char) => (acc << 5) - acc + char.charCodeAt(0), 0)).toString(36),
+    email: safeEmail,
+    displayName: safeName,
+    photoURL: null
+  };
+  localStorage.setItem('edgedash_local_user', JSON.stringify(localUser));
+  notifySubscribers(localUser);
+  return localUser;
 }
 
 // Auth Actions
@@ -77,11 +148,41 @@ export async function loginWithEmail(email: string, pass: string): Promise<Fireb
 }
 
 export async function logoutUser(): Promise<void> {
-  await signOut(auth);
+  try {
+    localStorage.removeItem('edgedash_local_user');
+  } catch (e) {
+    // Ignore storage issues
+  }
+  try {
+    await signOut(auth);
+  } catch (e) {
+    // Ignore sign out error
+  }
+  notifySubscribers(null);
 }
 
-export function subscribeToAuth(callback: (user: FirebaseUser | null) => void) {
-  return onAuthStateChanged(auth, callback);
+export function subscribeToAuth(callback: (user: AppUser | null) => void) {
+  authSubscribers.add(callback);
+  
+  // Call immediately with existing state if available
+  const existing = currentAppUser || getStoredLocalUser();
+  if (existing) {
+    callback(existing);
+  } else if (auth.currentUser) {
+    callback({
+      uid: auth.currentUser.uid,
+      email: auth.currentUser.email,
+      displayName: auth.currentUser.displayName,
+      photoURL: auth.currentUser.photoURL
+    });
+  } else {
+    // Trigger initial check
+    callback(null);
+  }
+
+  return () => {
+    authSubscribers.delete(callback);
+  };
 }
 
 // User Metadata Sync

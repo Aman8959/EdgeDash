@@ -12,7 +12,7 @@ import {
   HelpCircle
 } from 'lucide-react';
 import { Config, CandidateProfile } from '../types';
-import { User as FirebaseUser } from 'firebase/auth';
+import { AppUser } from '../services/firebase';
 import { InfoModalType } from './InfoModal';
 
 interface NavbarProps {
@@ -24,7 +24,7 @@ interface NavbarProps {
   onOpenProfile: () => void;
   onOpenAddJob: () => void;
   isCycling: boolean;
-  currentUser?: FirebaseUser | null;
+  currentUser?: AppUser | null;
   onSignOut?: () => void;
   onOpenInfo?: (type: InfoModalType) => void;
 }

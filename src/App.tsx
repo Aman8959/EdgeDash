@@ -17,7 +17,9 @@ import {
   defaultConfig, 
   defaultCandidateProfile, 
   defaultInitialListings, 
-  defaultSkillGaps 
+  defaultSkillGaps,
+  getEmptyCandidateProfile,
+  getEmptyConfig
 } from './data/defaultData';
 import { CandidateProfile, Config, JobListing, SkillGap } from './types';
 import { IndeedFetcher, Scorer, GapAnalyzer, Verifier } from './services/agents';
@@ -30,66 +32,25 @@ import {
   loadCandidateProfileFromFirestore,
   saveConfigToFirestore,
   loadConfigFromFirestore,
-  recordApplicationInFirestore
+  recordApplicationInFirestore,
+  AppUser
 } from './services/firebase';
-import { User as FirebaseUser } from 'firebase/auth';
 import { Bot } from 'lucide-react';
 
 export function App() {
   // Authentication State
-  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+  const [currentUser, setCurrentUser] = useState<AppUser | null>(null);
   const [authChecked, setAuthChecked] = useState<boolean>(false);
   const [infoModalType, setInfoModalType] = useState<InfoModalType>(null);
 
-  // State initialization with localStorage fallback
-  const [config, setConfig] = useState<Config>(() => {
-    const saved = localStorage.getItem('edgedash_config');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed && parsed.target_city !== 'Indore' && parsed.target_role !== 'Data Scientist') {
-          return parsed;
-        }
-      } catch (e) {}
-    }
-    return defaultConfig;
-  });
-
-  const [candidate, setCandidate] = useState<CandidateProfile>(() => {
-    const saved = localStorage.getItem('edgedash_candidate');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed && parsed.full_name && parsed.full_name !== 'John Doe') {
-          return parsed;
-        }
-      } catch (e) {}
-    }
-    return defaultCandidateProfile;
-  });
-
-  const [jobs, setJobs] = useState<JobListing[]>(() => {
-    const saved = localStorage.getItem('edgedash_jobs');
-    if (saved) {
-      try {
-        const parsed: JobListing[] = JSON.parse(saved);
-        // If saved jobs contain old dummy placeholder URLs (example.com), refresh with new verified listings
-        const hasDummy = parsed.some(j => (j.url && j.url.includes('example.com')) || j.company === 'TechCorp India');
-        if (!hasDummy && parsed.length > 0) {
-          return parsed;
-        }
-      } catch (e) {}
-    }
-    return defaultInitialListings;
-  });
-
-  const [skillGaps, setSkillGaps] = useState<SkillGap[]>(() => {
-    const saved = localStorage.getItem('edgedash_gaps');
-    return saved ? JSON.parse(saved) : defaultSkillGaps;
-  });
+  // State initialization: starts clean, populated strictly per authenticated user
+  const [config, setConfig] = useState<Config>(() => getEmptyConfig());
+  const [candidate, setCandidate] = useState<CandidateProfile>(() => getEmptyCandidateProfile());
+  const [jobs, setJobs] = useState<JobListing[]>([]);
+  const [skillGaps, setSkillGaps] = useState<SkillGap[]>([]);
 
   const [activeTab, setActiveTab] = useState<string>('jobs');
-  const [selectedJobId, setSelectedJobId] = useState<string | null>(jobs[0]?.id || null);
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 
   // Modals
   const [isCycleModalOpen, setIsCycleModalOpen] = useState<boolean>(false);
@@ -111,32 +72,103 @@ export function App() {
       setCurrentUser(user);
       setAuthChecked(true);
 
-      if (user) {
-        // Load user-specific profile and config from Firestore
-        try {
-          const userProfile = await loadCandidateProfileFromFirestore(user.uid);
-          if (userProfile) {
-            setCandidate(userProfile);
-          } else {
-            // First time user: save initial profile to Firestore
-            const initialForUser: CandidateProfile = {
-              ...candidate,
-              full_name: user.displayName || candidate.full_name || 'Aman Kumar Yadav',
-              email: user.email || candidate.email
-            };
-            setCandidate(initialForUser);
-            await saveCandidateProfileToFirestore(user.uid, initialForUser);
-          }
+      if (!user) {
+        // User logged out: Completely clear all state so no previous user data remains
+        setCandidate(getEmptyCandidateProfile());
+        setConfig(getEmptyConfig());
+        setJobs([]);
+        setSkillGaps([]);
+        setSelectedJobId(null);
+        setApplyingJob(null);
+        return;
+      }
 
-          const userConfig = await loadConfigFromFirestore(user.uid);
-          if (userConfig) {
-            setConfig(userConfig);
+      // User logged in: Load user-specific data
+      try {
+        const isDemo = user.email === 'candidate.demo@edgedash.ai';
+        const userProfKey = `edgedash_candidate_${user.uid}`;
+        const userConfKey = `edgedash_config_${user.uid}`;
+        const userJobsKey = `edgedash_jobs_${user.uid}`;
+
+        // 1. Try Firestore first
+        const firestoreProfile = await loadCandidateProfileFromFirestore(user.uid);
+        const firestoreConfig = await loadConfigFromFirestore(user.uid);
+
+        let activeProfile: CandidateProfile;
+        if (firestoreProfile) {
+          activeProfile = firestoreProfile;
+        } else {
+          // Check user-scoped local storage
+          const localStr = localStorage.getItem(userProfKey);
+          if (localStr) {
+            try {
+              activeProfile = JSON.parse(localStr);
+            } catch (e) {
+              activeProfile = isDemo ? defaultCandidateProfile : getEmptyCandidateProfile(user.displayName || '', user.email || '');
+            }
+          } else if (isDemo) {
+            activeProfile = defaultCandidateProfile;
+            await saveCandidateProfileToFirestore(user.uid, defaultCandidateProfile);
           } else {
-            await saveConfigToFirestore(user.uid, config);
+            // New user: clean empty profile so they can fill their own details
+            activeProfile = getEmptyCandidateProfile(user.displayName || '', user.email || '');
+            await saveCandidateProfileToFirestore(user.uid, activeProfile);
           }
-        } catch (e) {
-          console.warn('Firestore initial data sync notice:', e);
         }
+        setCandidate(activeProfile);
+        try { localStorage.setItem(userProfKey, JSON.stringify(activeProfile)); } catch (e) {}
+
+        let activeConfig: Config;
+        if (firestoreConfig) {
+          activeConfig = firestoreConfig;
+        } else {
+          const localConfStr = localStorage.getItem(userConfKey);
+          if (localConfStr) {
+            try {
+              activeConfig = JSON.parse(localConfStr);
+            } catch (e) {
+              activeConfig = isDemo ? defaultConfig : getEmptyConfig();
+            }
+          } else if (isDemo) {
+            activeConfig = defaultConfig;
+            await saveConfigToFirestore(user.uid, defaultConfig);
+          } else {
+            activeConfig = getEmptyConfig();
+            await saveConfigToFirestore(user.uid, activeConfig);
+          }
+        }
+        setConfig(activeConfig);
+        try { localStorage.setItem(userConfKey, JSON.stringify(activeConfig)); } catch (e) {}
+
+        // User jobs
+        let activeJobs: JobListing[] = [];
+        const localJobsStr = localStorage.getItem(userJobsKey);
+        if (localJobsStr) {
+          try {
+            activeJobs = JSON.parse(localJobsStr);
+          } catch (e) {}
+        }
+        if (!activeJobs || activeJobs.length === 0) {
+          activeJobs = defaultInitialListings;
+        }
+
+        // Score jobs based on the loaded user config
+        const rescored = activeJobs.map(j => {
+          const { score, reason } = Scorer.scoreListing(j, activeConfig);
+          return { ...j, fit_score: score, fit_reason: reason };
+        });
+        rescored.sort((a, b) => b.fit_score - a.fit_score);
+        setJobs(rescored);
+        try { localStorage.setItem(userJobsKey, JSON.stringify(rescored)); } catch (e) {}
+
+        const gaps = GapAnalyzer.analyze(rescored, activeConfig);
+        setSkillGaps(gaps);
+
+        if (rescored.length > 0) {
+          setSelectedJobId(rescored[0].id);
+        }
+      } catch (e) {
+        console.warn('User profile sync notice:', e);
       }
     });
 
@@ -146,9 +178,26 @@ export function App() {
   const handleSignOut = async () => {
     try {
       await logoutUser();
-      setCurrentUser(null);
     } catch (e) {
       console.error('Sign out error:', e);
+    } finally {
+      // Clear current user
+      setCurrentUser(null);
+      // Immediately reset all user-specific data to blank
+      setCandidate(getEmptyCandidateProfile());
+      setConfig(getEmptyConfig());
+      setJobs([]);
+      setSkillGaps([]);
+      setSelectedJobId(null);
+      setApplyingJob(null);
+      // Purge any legacy global keys
+      try {
+        localStorage.removeItem('edgedash_candidate');
+        localStorage.removeItem('edgedash_config');
+        localStorage.removeItem('edgedash_jobs');
+        localStorage.removeItem('edgedash_gaps');
+        localStorage.removeItem('edgedash_local_user');
+      } catch (e) {}
     }
   };
 
@@ -184,22 +233,34 @@ export function App() {
     }
   };
 
-  // Persist to localStorage
+  // Persist to user-scoped localStorage only when authenticated
   useEffect(() => {
-    localStorage.setItem('edgedash_config', JSON.stringify(config));
-  }, [config]);
+    if (!currentUser) return;
+    try {
+      localStorage.setItem(`edgedash_config_${currentUser.uid}`, JSON.stringify(config));
+    } catch (e) {}
+  }, [config, currentUser]);
 
   useEffect(() => {
-    localStorage.setItem('edgedash_candidate', JSON.stringify(candidate));
-  }, [candidate]);
+    if (!currentUser) return;
+    try {
+      localStorage.setItem(`edgedash_candidate_${currentUser.uid}`, JSON.stringify(candidate));
+    } catch (e) {}
+  }, [candidate, currentUser]);
 
   useEffect(() => {
-    localStorage.setItem('edgedash_jobs', JSON.stringify(jobs));
-  }, [jobs]);
+    if (!currentUser) return;
+    try {
+      localStorage.setItem(`edgedash_jobs_${currentUser.uid}`, JSON.stringify(jobs));
+    } catch (e) {}
+  }, [jobs, currentUser]);
 
   useEffect(() => {
-    localStorage.setItem('edgedash_gaps', JSON.stringify(skillGaps));
-  }, [skillGaps]);
+    if (!currentUser) return;
+    try {
+      localStorage.setItem(`edgedash_gaps_${currentUser.uid}`, JSON.stringify(skillGaps));
+    } catch (e) {}
+  }, [skillGaps, currentUser]);
 
   // Handler: Tailor resume from job card
   const handleSelectJobForResume = (job: JobListing) => {
@@ -321,18 +382,26 @@ export function App() {
     setCandidate(updated);
     if (currentUser) {
       saveCandidateProfileToFirestore(currentUser.uid, updated);
+      try {
+        localStorage.setItem(`edgedash_candidate_${currentUser.uid}`, JSON.stringify(updated));
+      } catch (e) {}
     }
 
     // Synchronize candidate skills and primary target role into config
-    const updatedSkills = updated.skills.map(s => s.skill_name);
+    const updatedSkills = (updated.skills || []).map(s => s.skill_name);
+    const targetRole = (updated.target_roles && updated.target_roles[0]) || config.target_role || '';
     const updatedConfig: Config = {
       ...config,
       my_skills: updatedSkills,
-      target_role: updated.target_roles[0] || config.target_role
+      target_role: targetRole,
+      target_city: updated.location || config.target_city || ''
     };
     setConfig(updatedConfig);
     if (currentUser) {
       saveConfigToFirestore(currentUser.uid, updatedConfig);
+      try {
+        localStorage.setItem(`edgedash_config_${currentUser.uid}`, JSON.stringify(updatedConfig));
+      } catch (e) {}
     }
 
     // Re-score all listings against updated profile
@@ -342,10 +411,20 @@ export function App() {
     });
     rescoredJobs.sort((a, b) => b.fit_score - a.fit_score);
     setJobs(rescoredJobs);
+    if (currentUser) {
+      try {
+        localStorage.setItem(`edgedash_jobs_${currentUser.uid}`, JSON.stringify(rescoredJobs));
+      } catch (e) {}
+    }
 
     // Recalculate skill gaps
     const updatedGaps = GapAnalyzer.analyze(rescoredJobs, updatedConfig);
     setSkillGaps(updatedGaps);
+    if (currentUser) {
+      try {
+        localStorage.setItem(`edgedash_gaps_${currentUser.uid}`, JSON.stringify(updatedGaps));
+      } catch (e) {}
+    }
   };
 
   const handleTriggerCycle = () => {

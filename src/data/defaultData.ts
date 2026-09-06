@@ -1,5 +1,32 @@
 import { CandidateProfile, Config, JobListing, SkillGap } from '../types';
 
+export const getEmptyCandidateProfile = (fullName: string = '', email: string = ''): CandidateProfile => ({
+  full_name: fullName,
+  email: email,
+  phone: '',
+  location: '',
+  summary: '',
+  target_roles: [],
+  github_url: '',
+  linkedin_url: '',
+  portfolio_url: '',
+  skills: [],
+  experience: [],
+  education: [],
+  certifications: [],
+  projects: [],
+  achievements: []
+});
+
+export const getEmptyConfig = (): Config => ({
+  target_role: '',
+  target_city: '',
+  keywords: [],
+  my_skills: [],
+  experience_years: 0,
+  min_fit_score: 50
+});
+
 export const defaultConfig: Config = {
   target_role: "Data Analyst",
   target_city: "Satna, Madhya Pradesh",

@@ -18,7 +18,7 @@ import {
   Link as LinkIcon
 } from 'lucide-react';
 import { CandidateProfile, Skill, Experience, Education, Certification, Project } from '../types';
-import { defaultCandidateProfile } from '../data/defaultData';
+import { defaultCandidateProfile, getEmptyCandidateProfile } from '../data/defaultData';
 
 interface CandidateProfileModalProps {
   isOpen: boolean;
@@ -66,6 +66,10 @@ export const CandidateProfileModal: React.FC<CandidateProfileModalProps> = ({
 
   const handleReset = () => {
     setProfile(JSON.parse(JSON.stringify(defaultCandidateProfile)));
+  };
+
+  const handleClearForm = () => {
+    setProfile(getEmptyCandidateProfile(profile.full_name || '', profile.email || ''));
   };
 
   // --- Skill Handlers ---
@@ -1047,14 +1051,26 @@ export const CandidateProfileModal: React.FC<CandidateProfileModalProps> = ({
 
         {/* Modal Footer */}
         <div className="shrink-0 p-4 border-t border-slate-800 bg-slate-900 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={handleReset}
-            className="px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Demo Data</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleClearForm}
+              className="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-semibold flex items-center gap-1.5 border border-rose-500/20 transition"
+              title="Clear all fields to fill your own data"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Clear Form</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleReset}
+              className="px-3 py-1.5 rounded-lg text-slate-400 hover:text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition"
+              title="Load demo sample profile"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Load Demo Data</span>
+            </button>
+          </div>
 
           <div className="flex items-center gap-2">
             <button

@@ -450,7 +450,7 @@ export class ResumeGenerator {
       "",
       ...educationSection,
       ...(certificationsSection.length > 0 ? ["", "CERTIFICATIONS", "", ...certificationsSection] : []),
-      ...(candidate.achievements.length > 0 ? ["", "ACHIEVEMENTS", "", ...candidate.achievements.map(a => `• ${a}`)] : [])
+      ...((candidate.achievements || []).length > 0 ? ["", "ACHIEVEMENTS", "", ...(candidate.achievements || []).map(a => `• ${a}`)] : [])
     ];
 
     const contentText = textLines.join("\n");
@@ -459,18 +459,18 @@ export class ResumeGenerator {
       version_id: versionId,
       target_role: jobReq.job_title,
       job_id: jobReq.job_id,
-      full_name: candidate.full_name,
-      contact_info: `${candidate.email}${candidate.phone ? ` | ${candidate.phone}` : ''}`,
+      full_name: candidate.full_name || 'Candidate',
+      contact_info: `${candidate.email || ''}${candidate.phone ? ` | ${candidate.phone}` : ''}`,
       professional_summary: profSummary,
       skills_section: skillsSection,
       experience_section: experienceSection,
       projects_section: projectsSection,
       education_section: educationSection,
       certifications_section: certificationsSection,
-      achievements_section: candidate.achievements,
+      achievements_section: candidate.achievements || [],
       used_skills: Object.fromEntries(selectedSkills.map(s => [s.skill_name, "Master Profile"])),
-      used_projects: selectedProjects.map(p => p.name),
-      used_experience_ids: candidate.experience.map((_, idx) => idx),
+      used_projects: (selectedProjects || []).map(p => p.name),
+      used_experience_ids: (candidate.experience || []).map((_, idx) => idx),
       created_at: new Date().toISOString(),
       content_text: contentText,
       validation_status: "VALID"
@@ -660,8 +660,8 @@ export class ATSOptimizer {
 export class Scorer {
   static scoreListing(listing: JobListing, config: Config): { score: number; reason: string } {
     const text = `${listing.title} ${listing.description}`.toLowerCase();
-    const keywordsLower = config.keywords.map(k => k.toLowerCase());
-    const skillsLower = config.my_skills.map(s => s.toLowerCase());
+    const keywordsLower = (config.keywords || []).map(k => k.toLowerCase());
+    const skillsLower = (config.my_skills || []).map(s => s.toLowerCase());
 
     const keywordMatches = keywordsLower.filter(k => text.includes(k)).length;
     const skillMatches = skillsLower.filter(s => text.includes(s)).length;
@@ -701,7 +701,7 @@ export class GapAnalyzer {
     };
 
     const counter: Record<string, number> = {};
-    const userSkillsLower = new Set(config.my_skills.map(s => s.toLowerCase()));
+    const userSkillsLower = new Set((config.my_skills || []).map(s => s.toLowerCase()));
 
     for (const job of jobs) {
       const desc = `${job.title} ${job.description}`.toLowerCase();
