@@ -85,10 +85,10 @@ export const InfoModal: React.FC<InfoModalProps> = ({ type, onClose }) => {
 
               <div className="bg-slate-800/60 border border-slate-700/70 rounded-xl p-4">
                 <h3 className="text-white font-semibold text-base mb-1.5 flex items-center gap-2">
-                  <span className="text-blue-400">Q4.</span> How does 1-Click Direct Apply work?
+                  <span className="text-blue-400">Q4.</span> How do I apply for jobs on EdgeDash?
                 </h3>
                 <p className="text-slate-300 text-xs sm:text-sm">
-                  When you click Direct Apply, EdgeDash prepares an official Application Dossier containing your verified profile, tailored resume, targeted cover letter, and screening pitch. You can submit directly in-app, open pre-filled outreach emails in Gmail/Outlook, or jump straight to the company's verified application portal.
+                  To ensure 100% legitimate submissions without being flagged as bot spam, applications are submitted directly on the employer's official careers portal. EdgeDash equips you with a 1-Click Application Pack (JD-tailored resume PDF, custom cover letter, recruiter outreach pitch, and interview prep questions) and opens the official job listing so you can apply smoothly and log your progress in your Application Tracker pipeline.
                 </p>
               </div>
 

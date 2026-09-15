@@ -29,332 +29,237 @@ export const getEmptyConfig = (): Config => ({
 
 export const defaultConfig: Config = {
   target_role: "Data Analyst",
-  target_city: "Satna, Madhya Pradesh",
+  target_city: "Remote (Global / US / India)",
   keywords: [
     "Data Analysis",
     "Python",
     "SQL",
     "Power BI",
+    "Tableau",
     "Machine Learning",
-    "Generative AI",
     "EDA",
-    "AI Automation",
-    "Business Analytics"
+    "Business Analytics",
+    "ETL Pipelines"
   ],
   my_skills: [
     "Python",
     "SQL",
     "Power BI",
+    "Tableau",
     "Data Analysis",
     "Data Cleaning",
     "Exploratory Data Analysis (EDA)",
     "Data Visualization",
     "Business Analytics",
-    "Generative AI",
-    "Machine Learning",
-    "AI Automation"
+    "ETL Pipelines",
+    "Machine Learning"
   ],
-  experience_years: 2,
+  experience_years: 3,
   min_fit_score: 30
 };
 
 export const defaultCandidateProfile: CandidateProfile = {
-  full_name: "Aman Kumar Yadav",
-  email: "aman895980@gmail.com",
-  phone: "8959803686",
-  location: "Satna, Madhya Pradesh, India",
-  summary: "Data Analyst and AI Automation Developer with hands-on experience in data cleaning, analysis, visualization, Power BI dashboards, Python, SQL, Generative AI, and workflow automation. Experienced in working with real-world datasets, developing data-driven solutions, building AI-powered applications, and creating practical business analytics solutions. Currently building professional experience through internships, freelance projects, and real-world data and AI applications.",
+  full_name: "Alex Morgan",
+  email: "alex.morgan.demo@example.com",
+  phone: "+1 (555) 234-8901",
+  location: "San Francisco, CA / Remote",
+  summary: "Results-driven Data Analyst and BI Specialist with 3+ years of experience in SQL querying, Python data analysis, interactive dashboard engineering (Power BI, Tableau), and predictive modeling. Proven track record of developing automated ETL pipelines, optimizing query performance by 35%, and translating complex customer telemetry into actionable growth strategies.",
   target_roles: [
     "Data Analyst",
-    "Data Scientist",
-    "AI Automation Developer",
-    "Machine Learning Engineer",
-    "Analytics Engineer"
+    "Business Intelligence Analyst",
+    "Analytics Engineer",
+    "Product Analyst",
+    "Data Scientist"
   ],
-  github_url: "",
-  linkedin_url: "https://www.linkedin.com/in/aman-kumar-yadav-ds",
-  portfolio_url: "",
+  github_url: "https://github.com/alexmorgan-data-demo",
+  linkedin_url: "https://www.linkedin.com/in/alex-morgan-analytics-demo",
+  portfolio_url: "https://alexmorgan-analytics.example.com",
   skills: [
-    { skill_name: "Python", proficiency: "Expert", years_of_experience: 3, category: "Technical", endorsements: 45 },
-    { skill_name: "SQL", proficiency: "Advanced", years_of_experience: 2, category: "Technical", endorsements: 38 },
-    { skill_name: "Power BI", proficiency: "Advanced", years_of_experience: 2, category: "Technical", endorsements: 36 },
-    { skill_name: "Data Analysis", proficiency: "Expert", years_of_experience: 3, category: "Technical", endorsements: 42 },
-    { skill_name: "Data Cleaning", proficiency: "Expert", years_of_experience: 2, category: "Technical", endorsements: 35 },
-    { skill_name: "Exploratory Data Analysis (EDA)", proficiency: "Expert", years_of_experience: 2, category: "Technical", endorsements: 39 },
-    { skill_name: "Data Visualization", proficiency: "Advanced", years_of_experience: 2, category: "Technical", endorsements: 34 },
-    { skill_name: "Business Analytics", proficiency: "Advanced", years_of_experience: 2, category: "Analytical", endorsements: 30 },
-    { skill_name: "Customer Analytics", proficiency: "Intermediate", years_of_experience: 1, category: "Analytical", endorsements: 22 },
-    { skill_name: "Data Management", proficiency: "Advanced", years_of_experience: 2, category: "Technical", endorsements: 28 },
-    { skill_name: "Generative AI", proficiency: "Advanced", years_of_experience: 2, category: "AI / ML", endorsements: 35 },
-    { skill_name: "Machine Learning", proficiency: "Intermediate", years_of_experience: 2, category: "AI / ML", endorsements: 32 },
-    { skill_name: "AI Automation", proficiency: "Advanced", years_of_experience: 2, category: "AI / ML", endorsements: 33 },
-    { skill_name: "LLM/API-based Applications", proficiency: "Advanced", years_of_experience: 2, category: "AI / ML", endorsements: 31 },
-    { skill_name: "Workflow Automation", proficiency: "Advanced", years_of_experience: 2, category: "Technical", endorsements: 29 },
-    { skill_name: "Java", proficiency: "Intermediate", years_of_experience: 1, category: "Programming", endorsements: 25 },
-    { skill_name: "Object-Oriented Programming (OOP)", proficiency: "Advanced", years_of_experience: 2, category: "Programming", endorsements: 27 },
-    { skill_name: "Programming Fundamentals", proficiency: "Expert", years_of_experience: 3, category: "Programming", endorsements: 36 },
-    { skill_name: "Problem Solving", proficiency: "Expert", years_of_experience: 3, category: "Analytical", endorsements: 40 },
-    { skill_name: "React.js", proficiency: "Intermediate", years_of_experience: 1, category: "Web Development", endorsements: 20 },
-    { skill_name: "Full-Stack Development", proficiency: "Intermediate", years_of_experience: 1, category: "Web Development", endorsements: 22 },
-    { skill_name: "Database Integration", proficiency: "Advanced", years_of_experience: 2, category: "Technical", endorsements: 26 },
-    { skill_name: "ATS Optimization", proficiency: "Advanced", years_of_experience: 2, category: "Career / Technical", endorsements: 30 }
+    { skill_name: "Python", proficiency: "Expert", years_of_experience: 3, category: "Technical", endorsements: 48 },
+    { skill_name: "SQL", proficiency: "Expert", years_of_experience: 3, category: "Technical", endorsements: 52 },
+    { skill_name: "Power BI", proficiency: "Expert", years_of_experience: 3, category: "Technical", endorsements: 44 },
+    { skill_name: "Tableau", proficiency: "Advanced", years_of_experience: 2, category: "Technical", endorsements: 38 },
+    { skill_name: "Data Analysis", proficiency: "Expert", years_of_experience: 3, category: "Technical", endorsements: 50 },
+    { skill_name: "Data Cleaning", proficiency: "Expert", years_of_experience: 3, category: "Technical", endorsements: 42 },
+    { skill_name: "Exploratory Data Analysis (EDA)", proficiency: "Expert", years_of_experience: 3, category: "Technical", endorsements: 46 },
+    { skill_name: "Data Visualization", proficiency: "Expert", years_of_experience: 3, category: "Technical", endorsements: 45 },
+    { skill_name: "Business Analytics", proficiency: "Advanced", years_of_experience: 3, category: "Analytical", endorsements: 40 },
+    { skill_name: "Customer Analytics", proficiency: "Advanced", years_of_experience: 2, category: "Analytical", endorsements: 32 },
+    { skill_name: "Data Modeling", proficiency: "Advanced", years_of_experience: 2, category: "Technical", endorsements: 36 },
+    { skill_name: "ETL Pipelines", proficiency: "Advanced", years_of_experience: 2, category: "Technical", endorsements: 34 },
+    { skill_name: "Machine Learning", proficiency: "Intermediate", years_of_experience: 2, category: "AI / ML", endorsements: 30 },
+    { skill_name: "Generative AI", proficiency: "Intermediate", years_of_experience: 1, category: "AI / ML", endorsements: 28 },
+    { skill_name: "Statistical Inference", proficiency: "Advanced", years_of_experience: 2, category: "Analytical", endorsements: 35 },
+    { skill_name: "PostgreSQL", proficiency: "Advanced", years_of_experience: 3, category: "Database", endorsements: 41 },
+    { skill_name: "Git & GitHub", proficiency: "Advanced", years_of_experience: 3, category: "Tools", endorsements: 39 },
+    { skill_name: "Problem Solving", proficiency: "Expert", years_of_experience: 3, category: "Core", endorsements: 45 },
+    { skill_name: "ATS Optimization", proficiency: "Advanced", years_of_experience: 2, category: "Career / Technical", endorsements: 33 }
   ],
   experience: [
     {
-      company: "YuvaIntern",
-      job_title: "Virtual Data Science with Python Trainee",
-      start_date: "2026-08",
+      company: "Nexus Analytics Global",
+      job_title: "Senior Data & BI Analyst",
+      start_date: "2023-01",
       end_date: null,
-      description: "Data Science with Python trainee focused on applying Python and data science concepts through practical, real-world datasets and collaborative projects.",
+      description: "Led analytics infrastructure, automated pipeline engineering, and executive BI reporting across high-growth product lines.",
       location: "Remote",
       responsibilities: [
-        "Conducted hands-on projects using real-world datasets to apply theoretical knowledge.",
-        "Enhanced Python programming skills through practical applications in data science.",
-        "Collaborated with a dynamic team and contributed to a supportive learning environment."
+        "Architected automated SQL pipelines processing 2.5M+ daily transaction records, reducing runtime latency by 35%.",
+        "Designed and maintained 15+ executive Power BI and Tableau dashboards tracking ARR, customer churn, and cohort retention.",
+        "Partnered with product and growth teams to formulate statistical A/B test hypotheses, increasing user conversion by 12%."
+      ],
+      skills_demonstrated: [
+        "SQL",
+        "Power BI",
+        "Tableau",
+        "Python",
+        "Data Modeling",
+        "A/B Testing"
+      ]
+    },
+    {
+      company: "CloudWave Technologies",
+      job_title: "Data Analyst & Reporting Specialist",
+      start_date: "2021-06",
+      end_date: "2022-12",
+      description: "Managed data cleaning, exploratory analysis, and automated business KPI reporting for enterprise SaaS customers.",
+      location: "San Francisco, CA / Hybrid",
+      responsibilities: [
+        "Conducted deep-dive exploratory data analysis (EDA) using Python (Pandas, NumPy) to isolate bottlenecks in customer onboarding.",
+        "Built automated reporting routines in Python and SQL, eliminating 12 hours of weekly manual compilation.",
+        "Collaborated with data engineering to clean and validate incoming event streams across PostgreSQL and BigQuery."
       ],
       skills_demonstrated: [
         "Python",
-        "Data Science",
-        "Data Analysis",
+        "SQL",
+        "PostgreSQL",
+        "Data Cleaning",
         "EDA",
-        "Machine Learning"
+        "KPI Reporting"
       ]
     },
     {
-      company: "Nirmaan Mega Venture",
-      job_title: "Data Management Analyst",
-      start_date: "2024-08",
-      end_date: null,
-      description: "Responsible for data collection, validation, analysis, visualization, dashboard development, and reporting automation to support data-driven decision-making.",
-      location: "Satna, Madhya Pradesh",
+      company: "Apex Global Insights",
+      job_title: "Junior Analytics Associate (Internship)",
+      start_date: "2020-08",
+      end_date: "2021-05",
+      description: "Supported senior analysts with statistical queries, market benchmark reports, and client visualization decks.",
+      location: "Remote",
       responsibilities: [
-        "Collected and validated data to ensure accuracy for informed decision-making.",
-        "Conducted exploratory data analysis to identify trends and insights.",
-        "Developed interactive dashboards that enhanced data visualization and accessibility.",
-        "Automated reporting tasks, improving efficiency and collaboration across teams."
+        "Wrote optimized SQL queries for daily and monthly client performance benchmarks.",
+        "Created interactive charts and visual exhibits in Tableau for executive quarterly reviews.",
+        "Assisted with data validation and cleansing for multi-source marketing data."
       ],
       skills_demonstrated: [
-        "Data Management",
+        "SQL",
+        "Tableau",
+        "Excel",
         "Data Validation",
-        "Data Analysis",
-        "Power BI",
-        "Dashboard Development",
-        "Reporting Automation"
-      ]
-    },
-    {
-      company: "InAmigos Foundation (IAF)",
-      job_title: "AI Data Analytics",
-      start_date: "2026-08",
-      end_date: "2026-08",
-      description: "Worked on AI and Data Analytics activities as part of an internship in a startup environment.",
-      location: "India",
-      responsibilities: [
-        "Engaged in AI and Data Analytics tasks as part of an internship.",
-        "Collaborated in team meetings and group discussions to enhance project outcomes.",
-        "Completed assigned responsibilities efficiently in a professional setting.",
-        "Developed skills in teamwork, AI, and data analytics."
-      ],
-      skills_demonstrated: [
-        "AI",
-        "Data Analytics",
-        "Team Collaboration",
-        "Problem Solving"
-      ]
-    },
-    {
-      company: "Riddhi Dance Studio",
-      job_title: "Freelance Full-Stack Developer",
-      start_date: "2026-08",
-      end_date: "2026-08",
-      description: "Developed a comprehensive full-stack web project for Riddhi Dance Studio, managing frontend, backend, database integration, and deployment.",
-      location: "Satna, Madhya Pradesh",
-      responsibilities: [
-        "Developed a comprehensive full-stack web project managing frontend, backend, and deployment.",
-        "Integrated databases to ensure seamless data flow and responsive user experience.",
-        "Oversaw deployment processes and hosting configuration.",
-        "Developed the application strictly according to real-world business requirements."
-      ],
-      skills_demonstrated: [
-        "React.js",
-        "Full-Stack Development",
-        "Database Integration",
-        "Web Deployment",
-        "JavaScript"
-      ]
-    },
-    {
-      company: "CODTECH IT SOLUTIONS",
-      job_title: "Intern – Java Programming",
-      start_date: "2025-11",
-      end_date: "2026-01",
-      description: "Completed a Java Programming Internship focused on strengthening Java programming skills, practical knowledge, problem-solving abilities, OOP concepts, and professional development.",
-      location: "Hyderabad, India",
-      responsibilities: [
-        "Strengthened Java programming skills through practical assignments.",
-        "Developed practical knowledge of Object-Oriented Programming (OOP).",
-        "Improved problem-solving fundamentals and algorithm implementation.",
-        "Worked through assignments, collaboration, and hands-on learning.",
-        "Successfully completed the Java Programming Internship with excellence."
-      ],
-      skills_demonstrated: [
-        "Java",
-        "OOP",
-        "Programming Fundamentals",
-        "Problem Solving",
-        "Software Development"
+        "Market Research"
       ]
     }
   ],
   education: [
     {
-      institution: "Indian Institute of Technology, Roorkee",
-      degree: "Advance AI and Data Science Diploma",
-      field_of_study: "AI & Data Science",
-      graduation_year: 2026,
-      gpa: "Pursuing (2026-02 to 2026-10)",
+      institution: "University of California, Berkeley (Extension)",
+      degree: "Professional Certificate in Applied Data Science & Analytics",
+      field_of_study: "Data Science & Machine Learning",
+      graduation_year: 2023,
+      gpa: "Distinction",
       relevant_coursework: [
-        "Advance AI",
-        "Data Science",
-        "Machine Learning",
-        "Deep Learning",
-        "Generative AI"
+        "Advanced SQL",
+        "Predictive Modeling",
+        "Data Mining",
+        "Statistical Inference"
       ]
     },
     {
-      institution: "AKS University, Satna (M.P.)",
+      institution: "State University of Technology",
       degree: "Bachelor of Science",
-      field_of_study: "Information Technology",
-      graduation_year: 2026,
-      gpa: "2023-07 to 2026-07",
+      field_of_study: "Computer Science & Information Systems",
+      graduation_year: 2021,
+      gpa: "3.8 / 4.0",
       relevant_coursework: [
-        "Information Technology",
-        "Database Management",
-        "Data Structures",
-        "Programming",
-        "Web Technologies"
-      ]
-    },
-    {
-      institution: "Govt. Venkat Hr. Sec. Excellence School No. 1, Satna",
-      degree: "12th – PCM",
-      field_of_study: "Physics, Chemistry, Mathematics",
-      graduation_year: 2019,
-      gpa: "2018-07 to 2019-06",
-      relevant_coursework: [
-        "Mathematics",
-        "Physics",
-        "Chemistry"
-      ]
-    },
-    {
-      institution: "Govt. Venkat Hr. Sec. Excellence School No. 1, Satna",
-      degree: "10th",
-      field_of_study: "General / Science",
-      graduation_year: 2017,
-      gpa: "2016-07 to 2017-06",
-      relevant_coursework: [
-        "Science",
-        "Mathematics",
-        "Social Studies"
+        "Database Management Systems",
+        "Data Structures & Algorithms",
+        "Applied Statistics",
+        "Linear Algebra"
       ]
     }
   ],
   certifications: [
     {
-      name: "Data Visualisation: Empowering Business with Effective Insights",
-      issuer: "Tata / Forage",
-      issue_date: "2024-05",
+      name: "Google Advanced Data Analytics Professional Certificate",
+      issuer: "Google / Coursera",
+      issue_date: "2023-08",
       expiry_date: null,
       credential_url: ""
     },
     {
-      name: "Tata – GenAI Powered Data Analytics Job Simulation",
-      issuer: "Tata / Forage",
-      issue_date: "2024-06",
+      name: "Microsoft Certified: Power BI Data Analyst Associate (PL-300)",
+      issuer: "Microsoft",
+      issue_date: "2023-03",
       expiry_date: null,
       credential_url: ""
     },
     {
-      name: "BCG – Data Science Job Simulation",
-      issuer: "Boston Consulting Group (BCG) / Forage",
-      issue_date: "2024-07",
+      name: "AWS Certified Cloud Practitioner",
+      issuer: "Amazon Web Services (AWS)",
+      issue_date: "2022-11",
       expiry_date: null,
       credential_url: ""
     },
     {
-      name: "Problem-Driven AI: Real World Applications and Solution Frameworks",
-      issuer: "AI Professional Program",
-      issue_date: "2024-08",
-      expiry_date: null,
-      credential_url: ""
-    },
-    {
-      name: "TCS iON Career Edge – Young Professional",
-      issuer: "TCS iON",
-      issue_date: "2024-04",
+      name: "IBM Data Analyst Professional Certificate",
+      issuer: "IBM",
+      issue_date: "2022-04",
       expiry_date: null,
       credential_url: ""
     }
   ],
   projects: [
     {
-      name: "AI-Powered Support Ticket Intelligence System",
-      description: "Built an AI-powered support ticket intelligence system focused on analyzing support tickets and extracting useful insights.",
-      category: "AI & Data Analytics",
-      target_roles: ["AI Automation Developer", "Data Analyst", "Data Scientist"],
-      skills_used: ["AI", "Generative AI", "Data Analytics", "LLM/API-based Applications", "Python"],
-      keywords: ["Ticket Intelligence", "Generative AI", "LLM", "Data Analytics", "Insights"],
+      name: "SaaS Retention & Churn Prediction System",
+      description: "Engineered an end-to-end predictive machine learning model identifying at-risk accounts with 89% precision.",
+      category: "Predictive Analytics",
+      target_roles: ["Data Analyst", "Data Scientist"],
+      skills_used: ["Python", "Scikit-learn", "SQL", "Streamlit"],
+      keywords: ["Churn Prediction", "Retention Modeling", "Machine Learning", "Python"],
       priority: 10,
       url: "",
       github_url: null,
-      metrics: "Applied AI and data-driven techniques to support practical business analysis"
+      metrics: "Flagged early churn signals saving an estimated $140,000 in annualized recurring revenue"
     },
     {
-      name: "Data Analysis & Business Trends Analysis",
-      description: "Worked with large datasets to analyze data, identify business trends, and generate useful insights.",
-      category: "Data Analysis",
-      target_roles: ["Data Analyst", "Analytics Engineer", "Data Scientist"],
-      skills_used: ["Python", "SQL", "Data Analysis", "Exploratory Data Analysis"],
-      keywords: ["Business Trends", "Data Cleaning", "EDA", "Insights"],
+      name: "E-Commerce Revenue & Cohort Intelligence Platform",
+      description: "Designed a real-time cohort analysis dashboard tracking customer retention curves, average order value, and lifetime value.",
+      category: "Business Intelligence",
+      target_roles: ["Data Analyst", "Analytics Engineer"],
+      skills_used: ["SQL", "Power BI", "Python", "PostgreSQL"],
+      keywords: ["Cohort Analysis", "Power BI", "LTV", "Dashboard"],
       priority: 9,
       url: "",
       github_url: null,
-      metrics: "Generated data-driven insights to understand trends and support business-oriented decision-making"
+      metrics: "Processed 1.2M+ historical transactions with sub-second dashboard query performance"
     },
     {
-      name: "Interactive Business Dashboards",
-      description: "Developed data-driven interactive dashboards for business and customer analytics.",
-      category: "Business Intelligence",
+      name: "Automated Multi-Channel Marketing Attribution Pipeline",
+      description: "Built automated data workflows unifying Google Ads, Meta Ads, and Stripe revenue data into a normalized data mart.",
+      category: "Data Engineering & Analytics",
       target_roles: ["Data Analyst", "Analytics Engineer"],
-      skills_used: ["Power BI", "Data Visualization", "Business Analytics", "Customer Analytics"],
-      keywords: ["Power BI", "Dashboards", "Business Analytics", "Customer Analytics"],
+      skills_used: ["Python", "SQL", "PostgreSQL", "REST APIs"],
+      keywords: ["Attribution", "ETL", "Automation", "Marketing Analytics"],
       priority: 8,
       url: "",
       github_url: null,
-      metrics: "Created accessible visual reports to communicate data insights effectively"
-    },
-    {
-      name: "Machine Learning Solutions",
-      description: "Worked on practical machine learning solutions using real-world data and data science techniques.",
-      category: "Machine Learning",
-      target_roles: ["Machine Learning Engineer", "Data Scientist"],
-      skills_used: ["Python", "Machine Learning", "Data Science"],
-      keywords: ["Predictive Models", "Machine Learning", "Data Science"],
-      priority: 8,
-      url: "",
-      github_url: null,
-      metrics: "Developed data-driven solutions as part of hands-on learning and professional projects"
+      metrics: "Eliminated 10+ hours per week of manual cross-platform spreadsheet reconciliation"
     }
   ],
   achievements: [
-    "Hands-on experience with real-world datasets across data cleaning, analysis, and visualization.",
-    "Experience in data collection, validation, exploratory data analysis, and Power BI interactive dashboards.",
-    "Experience with AI, Generative AI applications, LLM/API-based apps, and workflow automation.",
-    "Built AI-powered support ticket intelligence system for business analytics.",
-    "Experience in full-stack web development with database integration and deployment.",
-    "Internship experience across Data Science, AI Data Analytics, and Java Programming.",
-    "Currently pursuing Advance AI and Data Science Diploma from Indian Institute of Technology, Roorkee."
+    "Over 3 years of hands-on experience designing production BI dashboards, automated SQL pipelines, and predictive models.",
+    "Certified Power BI Data Analyst Associate and Google Advanced Data Analytics professional.",
+    "Proven track record of optimizing data warehouse queries, cutting run times by up to 35%.",
+    "Deep domain experience analyzing SaaS unit economics, cohort retention, and conversion funnels."
   ]
 };
 

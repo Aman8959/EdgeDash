@@ -59,7 +59,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenInfo, isAuthenticated = fa
               <li className="hover:text-slate-200 transition">🎯 Dual-Matrix Fit Scoring</li>
               <li className="hover:text-slate-200 transition">📊 Market Skill Gap Engine</li>
               <li className="hover:text-slate-200 transition">📄 Zero-Hallucination ATS Resumes</li>
-              <li className="hover:text-slate-200 transition">🚀 1-Click Direct Apply Dossier</li>
+              <li className="hover:text-slate-200 transition">🚀 1-Click Application Pack & Tracking</li>
             </ul>
           </div>
 

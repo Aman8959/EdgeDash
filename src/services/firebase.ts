@@ -20,7 +20,7 @@ import {
   getDocs,
   Timestamp 
 } from 'firebase/firestore';
-import { CandidateProfile, Config, JobListing } from '../types';
+import { CandidateProfile, Config, JobListing, TrackedApplication } from '../types';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 // Initialize Firebase App safely (singleton check across hot reload & dev server)
@@ -284,4 +284,26 @@ export async function recordApplicationInFirestore(userId: string, job: JobListi
   } catch (e) {
     console.warn('Error recording application to Firestore:', e);
   }
+}
+
+export async function saveTrackedApplicationsToFirestore(userId: string, applications: TrackedApplication[]) {
+  try {
+    const ref = doc(db, 'users', userId, 'data', 'tracked_applications');
+    await setDoc(ref, { applications, updatedAt: new Date().toISOString() }, { merge: true });
+  } catch (e) {
+    console.warn('Error saving tracked applications to Firestore:', e);
+  }
+}
+
+export async function loadTrackedApplicationsFromFirestore(userId: string): Promise<TrackedApplication[] | null> {
+  try {
+    const ref = doc(db, 'users', userId, 'data', 'tracked_applications');
+    const snap = await getDoc(ref);
+    if (snap.exists() && snap.data()?.applications) {
+      return snap.data().applications as TrackedApplication[];
+    }
+  } catch (e) {
+    console.warn('Error loading tracked applications from Firestore:', e);
+  }
+  return null;
 }

@@ -112,7 +112,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess, onOpenInf
     } catch (err: any) {
       console.warn('Google sign-in attempt notice:', err);
       if (err.code === 'auth/operation-not-allowed' || err.message?.includes('operation-not-allowed')) {
-        loginWithLocalSession('aman.ku.yadav2001@gmail.com', 'Aman Kumar Yadav');
+        loginWithLocalSession('candidate.demo@edgedash.ai', 'Alex Morgan');
         onAuthSuccess();
         return;
       }
@@ -133,16 +133,16 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess, onOpenInf
         onAuthSuccess();
       } catch (loginErr: any) {
         if (loginErr.code === 'auth/operation-not-allowed' || loginErr.message?.includes('operation-not-allowed')) {
-          loginWithLocalSession('aman.ku.yadav2001@gmail.com', 'Aman Kumar Yadav');
+          loginWithLocalSession('candidate.demo@edgedash.ai', 'Alex Morgan');
           onAuthSuccess();
           return;
         }
-        await registerWithEmail('candidate.demo@edgedash.ai', 'EdgeDashDemo2026!', 'Aman Kumar Yadav');
+        await registerWithEmail('candidate.demo@edgedash.ai', 'EdgeDashDemo2026!', 'Alex Morgan');
         onAuthSuccess();
       }
     } catch (err: any) {
       console.warn('Demo sign-in fallback to local session:', err);
-      loginWithLocalSession('aman.ku.yadav2001@gmail.com', 'Aman Kumar Yadav');
+      loginWithLocalSession('candidate.demo@edgedash.ai', 'Alex Morgan');
       onAuthSuccess();
     } finally {
       setLoading(false);
@@ -355,7 +355,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess, onOpenInf
                         type="text"
                         value={fullName}
                         onChange={(e) => setFullName(e.target.value)}
-                        placeholder="Aman Kumar Yadav"
+                        placeholder="Alex Morgan"
                         required={mode === 'register'}
                         className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
                       />
@@ -374,7 +374,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess, onOpenInf
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="aman895980@gmail.com"
+                      placeholder="alex.morgan@example.com"
                       required
                       className="w-full pl-9 pr-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-xs sm:text-sm text-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
                     />
@@ -485,7 +485,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthSuccess, onOpenInf
                   disabled={loading}
                   className="text-xs text-slate-400 hover:text-blue-400 transition underline underline-offset-4"
                 >
-                  ⚡ Or Click Here for Quick Demo Access (Aman Kumar Yadav Profile)
+                  ⚡ Or Click Here for Quick Demo Access (Sample Candidate Profile)
                 </button>
               </div>
 

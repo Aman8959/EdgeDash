@@ -27,10 +27,13 @@ interface TopJobsTabProps {
   jobs: JobListing[];
   config: Config;
   onSelectJobForResume: (job: JobListing) => void;
-  onApplyJob: (job: JobListing) => void;
+  onApplyJob?: (job: JobListing) => void;
+  onOpenAppPack?: (job: JobListing) => void;
   onFetchLiveJobs?: (query?: string) => Promise<void>;
   isFetchingLive?: boolean;
   liveFetchMsg?: string | null;
+  onToggleTrackJob?: (job: JobListing) => void;
+  trackedJobIds?: Set<string>;
 }
 
 export const TopJobsTab: React.FC<TopJobsTabProps> = ({
@@ -38,9 +41,12 @@ export const TopJobsTab: React.FC<TopJobsTabProps> = ({
   config,
   onSelectJobForResume,
   onApplyJob,
+  onOpenAppPack,
   onFetchLiveJobs,
   isFetchingLive = false,
-  liveFetchMsg = null
+  liveFetchMsg = null,
+  onToggleTrackJob,
+  trackedJobIds = new Set<string>()
 }) => {
   const [minFitScore, setMinFitScore] = useState<number>(() => typeof config?.min_fit_score === 'number' ? config.min_fit_score : 0);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -258,6 +264,8 @@ export const TopJobsTab: React.FC<TopJobsTabProps> = ({
             const isApplied = job.application_status === 'applied';
             const isInterviewing = job.application_status === 'interviewing';
             const isOffered = job.application_status === 'offered';
+            const isTracked = trackedJobIds.has(job.id) || isApplied || isInterviewing || isOffered;
+            const officialJobUrl = job.url || `https://www.google.com/search?q=${encodeURIComponent(`${job.title} ${job.company} careers`)}`;
 
             return (
               <div
@@ -343,20 +351,30 @@ export const TopJobsTab: React.FC<TopJobsTabProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {/* APPLY / TRACK BUTTON */}
-                      <button
-                        id={`btn-apply-job-${job.id}`}
-                        onClick={() => onApplyJob(job)}
-                        className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg shadow-sm transition flex items-center gap-1.5 ${
-                          isApplied
-                            ? 'bg-emerald-600/90 hover:bg-emerald-600 text-white border border-emerald-400/40'
-                            : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-900/40'
-                        }`}
-                        title="1-Click Direct Apply, Email Outreach, Cover Letter & Status Tracking"
+                      {/* OFFICIAL JOB POST LINK */}
+                      <a
+                        id={`btn-visit-job-${job.id}`}
+                        href={officialJobUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition flex items-center gap-1.5"
+                        title="Open official employer career portal in a new tab"
                       >
-                        <Send className="w-3.5 h-3.5" />
-                        <span>{isApplied ? `Applied (${job.application_ref ? '#' + job.application_ref.slice(-4) : '✓'})` : '⚡ Direct Apply'}</span>
-                      </button>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>Official Job Post ↗</span>
+                      </a>
+
+                      {onOpenAppPack && (
+                        <button
+                          id={`btn-app-pack-${job.id}`}
+                          onClick={() => onOpenAppPack(job)}
+                          className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-600/90 hover:bg-amber-500 text-white shadow-sm transition flex items-center gap-1.5"
+                          title="Generate 1-Click Application Pack (Cover Letter, Recruiter Pitch, Interview Prep)"
+                        >
+                          <Zap className="w-3.5 h-3.5" />
+                          <span>App Pack</span>
+                        </button>
+                      )}
 
                       <button
                         id={`btn-resume-for-${job.id}`}
@@ -367,6 +385,22 @@ export const TopJobsTab: React.FC<TopJobsTabProps> = ({
                         <Sparkles className="w-3.5 h-3.5" />
                         <span>Tailor Resume</span>
                       </button>
+
+                      {onToggleTrackJob && (
+                        <button
+                          id={`btn-track-job-${job.id}`}
+                          onClick={() => onToggleTrackJob(job)}
+                          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition flex items-center gap-1.5 ${
+                            isTracked
+                              ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-900/60'
+                              : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+                          }`}
+                          title={isTracked ? 'Tracked in your Application Pipeline' : 'Save to your Application Tracker pipeline'}
+                        >
+                          {isTracked ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Briefcase className="w-3.5 h-3.5 text-slate-400" />}
+                          <span>{isTracked ? 'Tracked ✓' : 'Track Job'}</span>
+                        </button>
+                      )}
 
                       <button
                         id={`btn-expand-${job.id}`}
@@ -385,13 +419,15 @@ export const TopJobsTab: React.FC<TopJobsTabProps> = ({
                   <div className="mt-4 pt-4 border-t border-slate-700/80 space-y-3 text-xs sm:text-sm text-slate-300">
                     <div className="flex items-center justify-between">
                       <div className="font-semibold text-slate-200">Full Job Description:</div>
-                      <button
-                        onClick={() => onApplyJob(job)}
+                      <a
+                        href={officialJobUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="text-xs px-3 py-1 rounded-lg bg-emerald-600/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-600/30 flex items-center gap-1 font-semibold"
                       >
-                        <Send className="w-3 h-3" />
-                        <span>Open Application Kit & Apply</span>
-                      </button>
+                        <ExternalLink className="w-3 h-3" />
+                        <span>Open Official Job Portal ↗</span>
+                      </a>
                     </div>
                     <div className="bg-slate-950/60 p-3.5 rounded-lg border border-slate-800 text-slate-300 font-mono text-xs leading-relaxed whitespace-pre-wrap max-h-64 overflow-y-auto">
                       {job.description}
@@ -399,23 +435,24 @@ export const TopJobsTab: React.FC<TopJobsTabProps> = ({
                     <div className="flex justify-between items-center text-xs text-slate-400">
                       <span>Listing ID: {job.id}</span>
                       <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => onApplyJob(job)}
+                        {onOpenAppPack && (
+                          <button
+                            onClick={() => onOpenAppPack(job)}
+                            className="px-3 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs flex items-center gap-1 shadow-sm transition"
+                          >
+                            <Zap className="w-3 h-3" />
+                            <span>Prepare App Pack</span>
+                          </button>
+                        )}
+                        <a
+                          href={officialJobUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center gap-1 shadow-sm transition"
                         >
-                          <Send className="w-3 h-3" />
-                          <span>{isApplied ? 'Application Submitted (View/Update)' : '⚡ 1-Click Direct Apply'}</span>
-                        </button>
-                        {job.url && (
-                          <a
-                            href={job.url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-blue-400 hover:underline flex items-center gap-1"
-                          >
-                            <span>Official Source</span> <ExternalLink className="w-3 h-3" />
-                          </a>
-                        )}
+                          <ExternalLink className="w-3 h-3" />
+                          <span>Official Portal</span>
+                        </a>
                       </div>
                     </div>
                   </div>

@@ -20,7 +20,10 @@ import {
   CheckCircle2,
   XCircle,
   Briefcase,
-  Send
+  Send,
+  Plus,
+  Edit3,
+  CopyCheck
 } from 'lucide-react';
 import { 
   JobListing, 
@@ -38,6 +41,11 @@ import {
   ResumeValidator, 
   ATSOptimizer 
 } from '../services/agents';
+import { ResumeDocument } from './ResumeDocument';
+import { exportResumeToPDF } from '../services/pdfService';
+import { ResumeBuilderModal } from './ResumeBuilderModal';
+import { AtsScannerModal } from './AtsScannerModal';
+import { ApplicationPackModal } from './ApplicationPackModal';
 
 interface ResumeIntelligenceTabProps {
   jobs: JobListing[];
@@ -46,6 +54,7 @@ interface ResumeIntelligenceTabProps {
   onSelectJobId: (id: string) => void;
   onOpenProfileModal: () => void;
   onApplyJob?: (job: JobListing) => void;
+  onSaveCandidate?: (updated: CandidateProfile) => void;
 }
 
 export const ResumeIntelligenceTab: React.FC<ResumeIntelligenceTabProps> = ({
@@ -54,7 +63,8 @@ export const ResumeIntelligenceTab: React.FC<ResumeIntelligenceTabProps> = ({
   selectedJobId,
   onSelectJobId,
   onOpenProfileModal,
-  onApplyJob
+  onApplyJob,
+  onSaveCandidate
 }) => {
   const [currentJobId, setCurrentJobId] = useState<string>(selectedJobId || (jobs[0]?.id ?? ''));
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
@@ -62,6 +72,21 @@ export const ResumeIntelligenceTab: React.FC<ResumeIntelligenceTabProps> = ({
   const [activeSubTab, setActiveSubTab] = useState<'resume' | 'match' | 'validation' | 'ats'>('resume');
   const [viewRawText, setViewRawText] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
+  const [isExportingPdf, setIsExportingPdf] = useState<boolean>(false);
+
+  // Modals state
+  const [isBuilderModalOpen, setIsBuilderModalOpen] = useState<boolean>(false);
+  const [isScannerModalOpen, setIsScannerModalOpen] = useState<boolean>(false);
+  const [isAppPackModalOpen, setIsAppPackModalOpen] = useState<boolean>(false);
+
+  // Resume Versions State
+  const [selectedVersionId, setSelectedVersionId] = useState<string>('v-analyst');
+  const [resumeVersions, setResumeVersions] = useState<Array<{ id: string; title: string; role: string; ats_score: number; version: string; updated: string }>>([
+    { id: 'v-analyst', title: 'Data Analyst Resume', role: 'Data Analyst', ats_score: 92, version: 'v2.1 (Active)', updated: 'Today' },
+    { id: 'v-scientist', title: 'Data Scientist Resume', role: 'Data Scientist', ats_score: 88, version: 'v1.4', updated: '2 days ago' },
+    { id: 'v-mle', title: 'Machine Learning Resume', role: 'ML Engineer', ats_score: 86, version: 'v1.2', updated: 'Last week' }
+  ]);
+
   const [showJobDetails, setShowJobDetails] = useState<boolean>(false);
   const [showProfileDetails, setShowProfileDetails] = useState<boolean>(false);
 
@@ -200,9 +225,20 @@ export const ResumeIntelligenceTab: React.FC<ResumeIntelligenceTabProps> = ({
     window.print();
   };
 
+  const handleDownloadPdf = async () => {
+    setIsExportingPdf(true);
+    try {
+      await exportResumeToPDF(candidate, selectedJob?.title || candidate.target_roles[0] || 'Data_Analyst');
+    } catch (err) {
+      console.error('PDF export failed', err);
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header Info */}
+      {/* Header Info with Quick Actions */}
       <div className="bg-slate-800/60 border border-slate-700/80 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -212,19 +248,94 @@ export const ResumeIntelligenceTab: React.FC<ResumeIntelligenceTabProps> = ({
             </span>
           </div>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Automated multi-agent pipeline tailoring candidate credentials strictly from master profile data.
+            Automated multi-agent pipeline tailoring candidate credentials strictly from verified master profile data.
           </p>
         </div>
 
-        <button
-          id="btn-trigger-generate-resume"
-          onClick={handleGenerateResume}
-          disabled={isGenerating}
-          className="px-4 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs sm:text-sm transition flex items-center gap-2 shadow-md shadow-blue-600/30 disabled:opacity-50 shrink-0"
-        >
-          <Sparkles className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
-          <span>{isGenerating ? 'Generating...' : 'Regenerate Resume'}</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            id="btn-open-resume-builder"
+            onClick={() => setIsBuilderModalOpen(true)}
+            className="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition flex items-center gap-1.5 shadow-sm"
+          >
+            <Edit3 className="w-4 h-4 text-blue-400" />
+            <span>Resume Builder</span>
+          </button>
+
+          <button
+            id="btn-open-ats-scanner"
+            onClick={() => setIsScannerModalOpen(true)}
+            className="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition flex items-center gap-1.5 shadow-sm"
+          >
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>ATS Scanner</span>
+          </button>
+
+          <button
+            id="btn-open-app-pack"
+            onClick={() => setIsAppPackModalOpen(true)}
+            className="px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition flex items-center gap-1.5 shadow-sm"
+          >
+            <Send className="w-4 h-4 text-amber-400" />
+            <span>1-Click App Pack</span>
+          </button>
+
+          <button
+            id="btn-trigger-generate-resume"
+            onClick={handleGenerateResume}
+            disabled={isGenerating}
+            className="px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition flex items-center gap-1.5 shadow-md shadow-blue-600/30 disabled:opacity-50 shrink-0"
+          >
+            <Sparkles className={`w-4 h-4 ${isGenerating ? 'animate-spin' : ''}`} />
+            <span>{isGenerating ? 'Generating...' : 'Regenerate'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Resume Version Switcher */}
+      <div className="bg-slate-800/40 border border-slate-700/80 rounded-xl p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono">
+              Multiple Versions
+            </span>
+            <h3 className="text-sm font-bold text-white">Targeted Resume Versions</h3>
+          </div>
+          <button
+            onClick={() => setIsBuilderModalOpen(true)}
+            className="text-xs text-blue-400 hover:underline flex items-center gap-1 font-medium"
+          >
+            <Plus className="w-3.5 h-3.5" /> Create New Version
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {resumeVersions.map(ver => {
+            const isSelected = ver.id === selectedVersionId;
+            return (
+              <div
+                key={ver.id}
+                onClick={() => setSelectedVersionId(ver.id)}
+                className={`p-3 rounded-xl border transition cursor-pointer text-left ${
+                  isSelected 
+                    ? 'bg-blue-950/40 border-blue-500 text-white shadow-md' 
+                    : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:bg-slate-800/60'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-bold">{ver.title}</span>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+                    ATS: {ver.ats_score}%
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-400 flex items-center justify-between">
+                  <span>{ver.version}</span>
+                  <span>Updated {ver.updated}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Step 1 & Step 2 Selectors Grid */}
@@ -339,14 +450,18 @@ export const ResumeIntelligenceTab: React.FC<ResumeIntelligenceTabProps> = ({
             </div>
           )}
 
-          {selectedJob && onApplyJob && (
-            <button
-              onClick={() => onApplyJob(selectedJob)}
+          {selectedJob && (
+            <a
+              id="btn-visit-official-job"
+              href={selectedJob.url || `https://www.google.com/search?q=${encodeURIComponent(`${selectedJob.title} ${selectedJob.company} careers`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm transition"
+              title="Open official employer career portal in a new tab"
             >
-              <Send className="w-3.5 h-3.5" />
-              <span>{selectedJob.application_status === 'applied' ? 'View / Update Application Tracking' : 'Apply to this Job Now'}</span>
-            </button>
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Open Official Job Portal ↗</span>
+            </a>
           )}
 
           <button
@@ -450,16 +565,18 @@ export const ResumeIntelligenceTab: React.FC<ResumeIntelligenceTabProps> = ({
 
             {/* Quick Export / View Controls */}
             <div className="flex flex-wrap items-center gap-2 pb-2">
-              {selectedJob && onApplyJob && (
-                <button
-                  id="btn-apply-from-resume-tab"
-                  onClick={() => onApplyJob(selectedJob)}
+              {selectedJob && (
+                <a
+                  id="btn-visit-from-resume-tab"
+                  href={selectedJob.url || `https://www.google.com/search?q=${encodeURIComponent(`${selectedJob.title} ${selectedJob.company} careers`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="px-3 py-1 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-1.5 shadow-sm"
-                  title="Open application portals, tailored cover letter & tracker"
+                  title="Open employer's official job post in a new tab"
                 >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>{selectedJob.application_status === 'applied' ? 'Applied ✓' : 'Apply to Job'}</span>
-                </button>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Official Job Post ↗</span>
+                </a>
               )}
               <button
                 onClick={() => setViewRawText(!viewRawText)}
@@ -490,130 +607,25 @@ export const ResumeIntelligenceTab: React.FC<ResumeIntelligenceTabProps> = ({
                   </pre>
                 ) : (
                   /* Formatted Resume Preview matching standard ATS document */
-                  <div className="bg-white text-slate-900 rounded-xl p-6 sm:p-10 shadow-2xl max-w-4xl mx-auto space-y-6 print:m-0 print:p-0 print:shadow-none font-sans">
-                    {/* Header */}
-                    <div className="text-center border-b pb-4 border-slate-200">
-                      <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-950 uppercase">
-                        {candidate.full_name}
-                      </h1>
-                      <div className="text-xs sm:text-sm text-slate-600 mt-1 flex flex-wrap justify-center gap-2">
-                        <span>{candidate.location}</span>
-                        <span>•</span>
-                        <span className="font-medium">{candidate.email}</span>
-                        {candidate.phone && (
-                          <>
-                            <span>•</span>
-                            <span>{candidate.phone}</span>
-                          </>
-                        )}
-                        {candidate.linkedin_url && (
-                          <>
-                            <span>•</span>
-                            <a href={candidate.linkedin_url} className="text-blue-600 underline">LinkedIn</a>
-                          </>
-                        )}
-                        {candidate.github_url && (
-                          <>
-                            <span>•</span>
-                            <a href={candidate.github_url} className="text-blue-600 underline">GitHub</a>
-                          </>
-                        )}
-                      </div>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-slate-400">
+                        Live ATS compliant document preview (Exact 1:1 vector rendering matching exported PDF):
+                      </span>
+                      <button
+                        onClick={handleDownloadPdf}
+                        disabled={isExportingPdf}
+                        className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold flex items-center gap-1.5 transition shadow-sm disabled:opacity-50"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>{isExportingPdf ? 'Exporting...' : 'Export A4 PDF'}</span>
+                      </button>
                     </div>
 
-                    {/* Professional Summary */}
-                    <div className="space-y-1.5">
-                      <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b border-slate-300 pb-0.5">
-                        Professional Summary
-                      </h2>
-                      <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">
-                        {candidate.summary} Experienced with cutting-edge machine learning model development, statistical validation, and cross-functional intelligence reporting.
-                      </p>
-                    </div>
-
-                    {/* Key Skills */}
-                    <div className="space-y-1.5">
-                      <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b border-slate-300 pb-0.5">
-                        Key Technical Skills
-                      </h2>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs sm:text-sm text-slate-700">
-                        {generatedResume.skills_section.map((s, idx) => (
-                          <div key={idx} className="flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-700"></span>
-                            <span>{s}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Work Experience */}
-                    <div className="space-y-3">
-                      <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b border-slate-300 pb-0.5">
-                        Professional Experience
-                      </h2>
-                      {candidate.experience.map((exp, idx) => (
-                        <div key={idx} className="space-y-1">
-                          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between text-xs sm:text-sm font-semibold text-slate-900">
-                            <span>{exp.job_title} — <span className="font-normal text-slate-700">{exp.company} ({exp.location})</span></span>
-                            <span className="text-xs text-slate-500 font-mono">{exp.start_date} – {exp.end_date || 'Present'}</span>
-                          </div>
-                          {exp.description && (
-                            <p className="text-xs text-slate-600 italic">{exp.description}</p>
-                          )}
-                          <ul className="list-disc list-inside text-xs sm:text-sm text-slate-700 space-y-0.5">
-                            {exp.responsibilities.map((r, rIdx) => (
-                              <li key={rIdx}>{r}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Projects */}
-                    <div className="space-y-3">
-                      <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b border-slate-300 pb-0.5">
-                        Key Projects & Systems
-                      </h2>
-                      {candidate.projects.slice(0, 3).map((proj, idx) => (
-                        <div key={idx} className="space-y-0.5 text-xs sm:text-sm">
-                          <div className="flex items-baseline justify-between font-semibold text-slate-900">
-                            <span>{proj.name} {proj.metrics && <span className="font-normal text-xs text-emerald-700">({proj.metrics})</span>}</span>
-                            {proj.github_url && <span className="text-xs font-normal text-blue-600 underline">Project Link</span>}
-                          </div>
-                          <p className="text-slate-700">{proj.description}</p>
-                          <div className="text-xs text-slate-500">
-                            <strong>Tech:</strong> {proj.skills_used.join(', ')} • {proj.keywords.join(', ')}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Education & Certifications */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                      <div>
-                        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b border-slate-300 pb-0.5 mb-1.5">
-                          Education
-                        </h2>
-                        {candidate.education.map((edu, idx) => (
-                          <div key={idx} className="text-xs sm:text-sm text-slate-700">
-                            <div className="font-semibold text-slate-900">{edu.degree} in {edu.field_of_study}</div>
-                            <div>{edu.institution} ({edu.graduation_year}){edu.gpa ? ` • GPA: ${edu.gpa}` : ''}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div>
-                        <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b border-slate-300 pb-0.5 mb-1.5">
-                          Certifications
-                        </h2>
-                        {candidate.certifications.map((cert, idx) => (
-                          <div key={idx} className="text-xs sm:text-sm text-slate-700">
-                            <div className="font-semibold text-slate-900">{cert.name}</div>
-                            <div className="text-xs text-slate-500">{cert.issuer} • {cert.issue_date}</div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    <ResumeDocument 
+                      resume={candidate} 
+                      roleName={selectedJob?.title || candidate.target_roles[0]} 
+                    />
                   </div>
                 )}
               </div>
@@ -876,16 +888,53 @@ export const ResumeIntelligenceTab: React.FC<ResumeIntelligenceTabProps> = ({
             </button>
 
             <button
+              id="btn-download-pdf"
+              onClick={handleDownloadPdf}
+              disabled={isExportingPdf}
+              className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow transition flex items-center gap-1.5 disabled:opacity-50"
+            >
+              <Download className="w-4 h-4" />
+              <span>{isExportingPdf ? 'Exporting PDF...' : 'Download A4 PDF (ATS Friendly)'}</span>
+            </button>
+
+            <button
               id="btn-print-resume"
               onClick={handlePrint}
-              className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow transition flex items-center gap-1.5"
+              className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition flex items-center gap-1.5"
             >
               <Printer className="w-4 h-4" />
-              <span>Print / Save as PDF</span>
+              <span>Print Preview</span>
             </button>
           </div>
         </div>
       )}
+
+      {/* Resume Builder & Master Profile Editor Modal */}
+      <ResumeBuilderModal
+        isOpen={isBuilderModalOpen}
+        onClose={() => setIsBuilderModalOpen(false)}
+        candidate={candidate}
+        onSaveCandidate={(updated) => {
+          if (onSaveCandidate) onSaveCandidate(updated);
+        }}
+      />
+
+      {/* ATS Scanner Modal */}
+      <AtsScannerModal
+        isOpen={isScannerModalOpen}
+        onClose={() => setIsScannerModalOpen(false)}
+        candidate={candidate}
+        job={selectedJob}
+      />
+
+      {/* 1-Click Application Pack Modal */}
+      <ApplicationPackModal
+        isOpen={isAppPackModalOpen}
+        onClose={() => setIsAppPackModalOpen(false)}
+        candidate={candidate}
+        job={selectedJob}
+        onSaveToTracker={() => {}}
+      />
     </div>
   );
 };

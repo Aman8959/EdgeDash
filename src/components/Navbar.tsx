@@ -43,14 +43,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenInfo
 }) => {
   const tabs = [
-    { id: 'jobs', label: '📋 Top Jobs' },
-    { id: 'gaps', label: '🎯 Skill Gaps' },
-    { id: 'stats', label: '📈 Statistics' },
-    { id: 'insights', label: '💡 Insights' },
-    { id: 'resume', label: '📄 Resume Intelligence' }
+    { id: 'jobs', label: '📋 Jobs' },
+    { id: 'resume', label: '📄 Resume' },
+    { id: 'tracker', label: '📌 Applications' },
+    { id: 'coach', label: '🎙️ Interview Coach' },
+    { id: 'gaps', label: '🎯 Skill Gaps & Roadmap' },
+    { id: 'analytics', label: '📊 Analytics' },
+    { id: 'insights', label: '💡 Insights' }
   ];
 
-  const userDisplayName = currentUser?.displayName || candidate.full_name || currentUser?.email?.split('@')[0] || 'Aman Kumar Yadav';
+  const userDisplayName = currentUser?.displayName || candidate.full_name || currentUser?.email?.split('@')[0] || 'Demo Candidate';
   const userInitial = userDisplayName.charAt(0).toUpperCase();
 
   return (

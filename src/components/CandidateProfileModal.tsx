@@ -330,7 +330,7 @@ export const CandidateProfileModal: React.FC<CandidateProfileModalProps> = ({
                     type="text"
                     value={profile.full_name}
                     onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
-                    placeholder="e.g. Aman Yadav"
+                    placeholder="e.g. Alex Morgan"
                     className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>
@@ -341,7 +341,7 @@ export const CandidateProfileModal: React.FC<CandidateProfileModalProps> = ({
                     type="email"
                     value={profile.email}
                     onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                    placeholder="e.g. aman@example.com"
+                    placeholder="e.g. alex.morgan@example.com"
                     className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500"
                   />
                 </div>

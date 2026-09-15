@@ -5,6 +5,10 @@ import { SkillGapsTab } from './components/SkillGapsTab';
 import { StatisticsTab } from './components/StatisticsTab';
 import { InsightsTab } from './components/InsightsTab';
 import { ResumeIntelligenceTab } from './components/ResumeIntelligenceTab';
+import { ApplicationTrackerTab } from './components/ApplicationTrackerTab';
+import { InterviewCoachTab } from './components/InterviewCoachTab';
+import { CareerAnalyticsTab } from './components/CareerAnalyticsTab';
+import { ApplicationPackModal } from './components/ApplicationPackModal';
 import { AgentCycleModal } from './components/AgentCycleModal';
 import { CandidateProfileModal } from './components/CandidateProfileModal';
 import { AddJobModal } from './components/AddJobModal';
@@ -21,7 +25,7 @@ import {
   getEmptyCandidateProfile,
   getEmptyConfig
 } from './data/defaultData';
-import { CandidateProfile, Config, JobListing, SkillGap } from './types';
+import { CandidateProfile, Config, JobListing, SkillGap, TrackedApplication } from './types';
 import { IndeedFetcher, Scorer, GapAnalyzer, Verifier } from './services/agents';
 import { LiveJobService } from './services/liveJobsService';
 import { 
@@ -33,6 +37,8 @@ import {
   saveConfigToFirestore,
   loadConfigFromFirestore,
   recordApplicationInFirestore,
+  saveTrackedApplicationsToFirestore,
+  loadTrackedApplicationsFromFirestore,
   AppUser
 } from './services/firebase';
 import { Bot } from 'lucide-react';
@@ -103,6 +109,58 @@ export function App() {
   const [activeTab, setActiveTab] = useState<string>('jobs');
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 
+  // Application Tracking state (Kanban pipeline)
+  const [applications, setApplications] = useState<TrackedApplication[]>([
+    {
+      id: 'app-1',
+      job_id: 'remotive-2091097',
+      job_title: 'Senior Data Analyst (SQL & Python)',
+      company: 'GitLab',
+      location: 'Remote',
+      applied_date: '2025-02-15',
+      status: 'interview',
+      next_step: 'Technical Screen with Lead Analyst on Thursday',
+      notes: 'Tailored resume v2.1 submitted. Emphasized PostgreSQL optimization.',
+      resume_version: 'Data Analyst v2.1'
+    },
+    {
+      id: 'app-2',
+      job_id: 'jobicy-150923',
+      job_title: 'Business Intelligence & Data Analyst',
+      company: 'Stripe',
+      location: 'San Francisco, CA / Remote',
+      applied_date: '2025-02-18',
+      status: 'assessment',
+      next_step: 'Complete SQL Take-Home Challenge by Sunday',
+      notes: 'Included automated reporting and retention cohort analysis.',
+      resume_version: 'Data Analyst v2.1'
+    },
+    {
+      id: 'app-3',
+      job_id: 'init-001',
+      job_title: 'Data Analyst - Growth & Core Product',
+      company: 'Shopify',
+      location: 'Remote (US/Canada/India)',
+      applied_date: '2025-02-22',
+      status: 'applied',
+      next_step: 'Awaiting recruiter response',
+      notes: 'Direct recruiter pitch sent to Head of Talent.',
+      resume_version: 'Data Analyst v2.1'
+    },
+    {
+      id: 'app-4',
+      job_id: 'init-002',
+      job_title: 'Quantitative Data Analyst',
+      company: 'Two Sigma',
+      location: 'New York, NY / Hybrid',
+      applied_date: '2025-02-10',
+      status: 'offer',
+      next_step: 'Offer letter review & salary discussion',
+      notes: 'Received competitive offer package! Evaluating options.',
+      salary: '$135,000 / yr'
+    }
+  ]);
+
   // Modals
   const [isCycleModalOpen, setIsCycleModalOpen] = useState<boolean>(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
@@ -110,6 +168,10 @@ export function App() {
   const [isApplyModalOpen, setIsApplyModalOpen] = useState<boolean>(false);
   const [applyingJob, setApplyingJob] = useState<JobListing | null>(null);
   const [isCycling, setIsCycling] = useState<boolean>(false);
+
+  // 1-Click Application Pack Modal
+  const [isPackModalOpen, setIsPackModalOpen] = useState<boolean>(false);
+  const [selectedPackJob, setSelectedPackJob] = useState<JobListing | null>(null);
 
   // Live API Fetching State
   const [isFetchingLive, setIsFetchingLive] = useState<boolean>(false);
@@ -136,11 +198,13 @@ export function App() {
 
       // User logged in: Load user-specific data
       try {
-        const isAmanOrDemo = 
+        const isDemoUser = 
           !user.email || 
-          user.email.toLowerCase().includes('aman') || 
           user.email === 'candidate.demo@edgedash.ai' ||
-          Boolean(user.displayName && user.displayName.toLowerCase().includes('aman'));
+          user.email.toLowerCase().includes('demo') ||
+          user.email.toLowerCase().includes('alex') ||
+          user.email.includes('example.com') ||
+          Boolean(user.displayName && user.displayName.toLowerCase().includes('demo'));
 
         const userProfKey = `edgedash_candidate_${user.uid}`;
         const userConfKey = `edgedash_config_${user.uid}`;
@@ -162,11 +226,11 @@ export function App() {
           }
           if (parsedLocal && parsedLocal.skills && parsedLocal.skills.length > 0) {
             activeProfile = parsedLocal;
-          } else if (isAmanOrDemo) {
+          } else if (isDemoUser) {
             activeProfile = {
               ...defaultCandidateProfile,
-              email: user.email || defaultCandidateProfile.email,
-              full_name: user.displayName || defaultCandidateProfile.full_name
+              email: defaultCandidateProfile.email,
+              full_name: defaultCandidateProfile.full_name
             };
             await saveCandidateProfileToFirestore(user.uid, activeProfile);
           } else {
@@ -183,13 +247,13 @@ export function App() {
           activeConfig = firestoreConfig;
         } else {
           const profileSkills = (activeProfile.skills || []).map(s => s.skill_name);
-          const targetRole = (activeProfile.target_roles && activeProfile.target_roles[0]) || (isAmanOrDemo ? defaultConfig.target_role : 'Data Analyst');
+          const targetRole = (activeProfile.target_roles && activeProfile.target_roles[0]) || (isDemoUser ? defaultConfig.target_role : 'Data Analyst');
           activeConfig = {
             target_role: targetRole,
-            target_city: activeProfile.location || (isAmanOrDemo ? defaultConfig.target_city : 'Remote'),
-            keywords: profileSkills.length > 0 ? profileSkills.slice(0, 10) : (isAmanOrDemo ? defaultConfig.keywords : []),
-            my_skills: profileSkills.length > 0 ? profileSkills : (isAmanOrDemo ? defaultConfig.my_skills : []),
-            experience_years: activeProfile.experience?.length || (isAmanOrDemo ? defaultConfig.experience_years : 1),
+            target_city: activeProfile.location || (isDemoUser ? defaultConfig.target_city : 'Remote'),
+            keywords: profileSkills.length > 0 ? profileSkills.slice(0, 10) : (isDemoUser ? defaultConfig.keywords : []),
+            my_skills: profileSkills.length > 0 ? profileSkills : (isDemoUser ? defaultConfig.my_skills : []),
+            experience_years: activeProfile.experience?.length || (isDemoUser ? defaultConfig.experience_years : 1),
             min_fit_score: 30
           };
           await saveConfigToFirestore(user.uid, activeConfig);
@@ -227,6 +291,12 @@ export function App() {
 
         if (rescored.length > 0) {
           setSelectedJobId(rescored[0].id);
+        }
+
+        // Load user's saved application tracker pipeline if available
+        const firestoreApps = await loadTrackedApplicationsFromFirestore(user.uid);
+        if (firestoreApps && firestoreApps.length > 0) {
+          setApplications(firestoreApps);
         }
       } catch (e) {
         console.warn('User profile sync notice:', e);
@@ -327,10 +397,31 @@ export function App() {
     setActiveTab('resume');
   };
 
-  // Handler: Open Apply Toolkit modal
-  const handleOpenApplyJob = (job: JobListing) => {
-    setApplyingJob(job);
-    setIsApplyModalOpen(true);
+  // Handler: Track job toggle (save to pipeline or navigate to tracker)
+  const handleToggleTrackJob = (job: JobListing) => {
+    const existing = applications.find(a => a.job_id === job.id);
+    if (existing) {
+      setActiveTab('tracker');
+    } else {
+      const newApp: TrackedApplication = {
+        id: `app-${Date.now()}`,
+        job_id: job.id,
+        company: job.company,
+        job_title: job.title,
+        job_url: job.url || '',
+        location: job.location,
+        status: 'saved',
+        applied_date: new Date().toISOString().split('T')[0],
+        resume_version_used: 'Tailored ATS v2.1',
+        fit_score: job.fit_score || 85,
+        notes: 'Saved from Top Matching Jobs'
+      };
+      const updated = [newApp, ...applications];
+      setApplications(updated);
+      if (currentUser) {
+        saveTrackedApplicationsToFirestore(currentUser.uid, updated);
+      }
+    }
   };
 
   // Handler: Update job status or notes
@@ -546,10 +637,54 @@ export function App() {
             jobs={jobs}
             config={config}
             onSelectJobForResume={handleSelectJobForResume}
-            onApplyJob={handleOpenApplyJob}
+            onOpenAppPack={(job) => {
+              setSelectedPackJob(job);
+              setIsPackModalOpen(true);
+            }}
+            onToggleTrackJob={handleToggleTrackJob}
+            trackedJobIds={new Set(applications.map(a => a.job_id))}
             onFetchLiveJobs={handleFetchLiveJobs}
             isFetchingLive={isFetchingLive}
             liveFetchMsg={liveFetchSuccessMsg}
+          />
+        )}
+
+        {activeTab === 'resume' && (
+          <ResumeIntelligenceTab
+            jobs={jobs}
+            candidate={candidate}
+            selectedJobId={selectedJobId}
+            onSelectJobId={setSelectedJobId}
+            onOpenProfileModal={() => setIsProfileModalOpen(true)}
+            onSaveCandidate={(updated) => setCandidate(updated)}
+          />
+        )}
+
+        {activeTab === 'tracker' && (
+          <ApplicationTrackerTab
+            applications={applications}
+            onUpdateApplication={(updatedApp) => {
+              setApplications(prev => prev.map(a => a.id === updatedApp.id ? updatedApp : a));
+            }}
+            onAddApplication={(newApp) => {
+              const fullApp: TrackedApplication = {
+                ...newApp,
+                id: `app-${Date.now()}`
+              };
+              setApplications(prev => [fullApp, ...prev]);
+            }}
+            onDeleteApplication={(appId) => {
+              setApplications(prev => prev.filter(a => a.id !== appId));
+            }}
+            candidate={candidate}
+          />
+        )}
+
+        {activeTab === 'coach' && (
+          <InterviewCoachTab
+            candidate={candidate}
+            jobs={jobs}
+            selectedJobId={selectedJobId}
           />
         )}
 
@@ -562,11 +697,11 @@ export function App() {
           />
         )}
 
-        {activeTab === 'stats' && (
-          <StatisticsTab
-            jobs={jobs}
-            config={config}
+        {activeTab === 'analytics' && (
+          <CareerAnalyticsTab
             candidate={candidate}
+            jobs={jobs}
+            applications={applications}
           />
         )}
 
@@ -580,14 +715,11 @@ export function App() {
           />
         )}
 
-        {activeTab === 'resume' && (
-          <ResumeIntelligenceTab
+        {activeTab === 'stats' && (
+          <StatisticsTab
             jobs={jobs}
+            config={config}
             candidate={candidate}
-            selectedJobId={selectedJobId}
-            onSelectJobId={setSelectedJobId}
-            onOpenProfileModal={() => setIsProfileModalOpen(true)}
-            onApplyJob={handleOpenApplyJob}
           />
         )}
       </main>
@@ -637,6 +769,37 @@ export function App() {
           handleSelectJobForResume(job);
         }}
       />
+
+      {/* 1-Click Application Pack Modal */}
+      {selectedPackJob && (
+        <ApplicationPackModal
+          isOpen={isPackModalOpen}
+          onClose={() => {
+            setIsPackModalOpen(false);
+            setSelectedPackJob(null);
+          }}
+          candidate={candidate}
+          job={selectedPackJob}
+          onSaveToTracker={(job, coverLetter) => {
+            const newApp: TrackedApplication = {
+              id: `app-${Date.now()}`,
+              job_id: job.id,
+              company: job.company,
+              job_title: job.title,
+              job_url: job.url || '',
+              location: job.location,
+              status: 'applied',
+              applied_date: new Date().toISOString().split('T')[0],
+              resume_version_used: 'ATS Tailored v2.1',
+              cover_letter: coverLetter,
+              fit_score: job.fit_score || 85,
+              notes: 'Created via 1-Click Application Pack'
+            };
+            setApplications(prev => [newApp, ...prev]);
+            setActiveTab('tracker');
+          }}
+        />
+      )}
     </div>
   );
 }

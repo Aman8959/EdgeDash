@@ -4,6 +4,7 @@ export interface Skill {
   years_of_experience: number;
   category: string;
   endorsements?: number;
+  verified?: boolean;
 }
 
 export interface Experience {
@@ -15,13 +16,14 @@ export interface Experience {
   location: string;
   responsibilities: string[];
   skills_demonstrated: string[];
+  skills_used?: string[];
 }
 
 export interface Education {
   institution: string;
   degree: string;
   field_of_study: string;
-  graduation_year: number;
+  graduation_year: number | string;
   gpa?: string;
   relevant_coursework?: string[];
 }
@@ -193,3 +195,139 @@ export interface Config {
   experience_years: number;
   min_fit_score: number;
 }
+
+// ----------------------------------------------------
+// EdgeDash Product Evolution Types
+// ----------------------------------------------------
+
+export interface ExplainableFitScore {
+  overall_match: number;
+  skills_match: number;
+  experience_match: number;
+  projects_match: number;
+  education_match: number;
+  semantic_match: number;
+  strong_matches: string[];
+  missing_skills: string[];
+  recommendation: string;
+}
+
+export type ApplicationKanbanStatus = 
+  | 'saved' 
+  | 'applied' 
+  | 'assessment' 
+  | 'interview' 
+  | 'offer' 
+  | 'rejected';
+
+export interface TrackedApplication {
+  id: string;
+  job_id: string;
+  company: string;
+  job_title: string;
+  job_url?: string;
+  location: string;
+  salary?: string;
+  status: ApplicationKanbanStatus;
+  applied_date: string;
+  resume_version_used?: string;
+  resume_version?: string;
+  cover_letter?: string;
+  recruiter_name?: string;
+  recruiter_email?: string;
+  interview_date?: string;
+  follow_up_date?: string;
+  next_step?: string;
+  notes?: string;
+  fit_score?: number;
+}
+
+export interface UserResumeVersion {
+  id: string;
+  title: string;
+  target_role: string;
+  ats_score: number;
+  version: number;
+  updated_at: string;
+  personal_info: {
+    full_name: string;
+    email: string;
+    phone: string;
+    location: string;
+    title: string;
+    linkedin_url?: string;
+    github_url?: string;
+    portfolio_url?: string;
+  };
+  summary: string;
+  technical_skills: string[];
+  soft_skills: string[];
+  experience: Experience[];
+  projects: Project[];
+  education: Education[];
+  certifications: Certification[];
+  achievements: string[];
+  languages: string[];
+  enabled_sections?: Record<string, boolean>;
+}
+
+export interface ApplicationPackData {
+  job_id: string;
+  job_title: string;
+  company: string;
+  resume: UserResumeVersion;
+  cover_letter: {
+    subject: string;
+    content: string;
+    recipient: string;
+  };
+  recruiter_email: {
+    subject: string;
+    body: string;
+  };
+  linkedin_message: string;
+  interview_questions: Array<{
+    category: 'Technical' | 'Behavioral' | 'HR' | 'Project' | 'JD-Specific';
+    question: string;
+    sample_answer_approach: string;
+  }>;
+}
+
+export interface MockInterviewQuestion {
+  id: string;
+  category: 'Technical' | 'Behavioral' | 'HR' | 'Project' | 'JD-Specific';
+  question: string;
+  tips: string;
+  candidate_answer?: string;
+  ai_evaluation?: {
+    technical_accuracy: number;
+    communication: number;
+    relevance: number;
+    confidence: number;
+    structure: number;
+    clarity: number;
+    overall_score: number;
+    strengths: string[];
+    improvements: string[];
+    model_answer: string;
+  };
+}
+
+export interface RoadmapSkillItem {
+  id: string;
+  skill: string;
+  completed: boolean;
+  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  market_demand_pct: number;
+  estimated_weeks: string;
+  prerequisites: string[];
+  why_learn: string;
+}
+
+export interface RoadmapWeek {
+  week_number: number;
+  title: string;
+  description: string;
+  skills: RoadmapSkillItem[];
+}
+
