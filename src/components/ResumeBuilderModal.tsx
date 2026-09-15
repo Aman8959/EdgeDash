@@ -11,7 +11,7 @@ import {
   Sparkles,
   User, 
   Briefcase, 
-  Code, 
+  Code,
   GraduationCap, 
   Award, 
   Globe, 
