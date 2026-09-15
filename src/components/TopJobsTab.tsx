@@ -275,103 +275,124 @@ export const TopJobsTab: React.FC<TopJobsTabProps> = ({
                   isApplied ? 'border-emerald-500/40 bg-emerald-950/10' : 'border-slate-700/80'
                 }`}
               >
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                  <div className="space-y-1.5 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-700 text-slate-300 font-mono">
-                        #{idx + 1}
-                      </span>
-                      <h3 className="text-base sm:text-lg font-bold text-white hover:text-blue-400 transition">
-                        {job.title}
-                      </h3>
-                      <span className={`text-xs px-2.5 py-0.5 rounded-full border font-bold ${badge.bg}`}>
-                        {badge.label}
-                      </span>
-
-                      {/* Application Status Badge */}
-                      {isApplied && (
-                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 font-bold flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                          <span>Applied {job.applied_date ? `(${job.applied_date})` : ''}</span>
+                <div className="flex flex-col gap-3">
+                  {/* Top Section: Job Info and Fit Score */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="space-y-1.5 flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-700 text-slate-300 font-mono">
+                          #{idx + 1}
                         </span>
-                      )}
-
-                      {isInterviewing && (
-                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/50 font-bold flex items-center gap-1">
-                          <span>📅 Interviewing</span>
+                        <h3 className="text-base sm:text-lg font-bold text-white hover:text-blue-400 transition">
+                          {job.title}
+                        </h3>
+                        <span className={`text-xs px-2.5 py-0.5 rounded-full border font-bold ${badge.bg}`}>
+                          {badge.label}
                         </span>
-                      )}
 
-                      {isOffered && (
-                        <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/50 font-bold flex items-center gap-1">
-                          <span>🎉 Offer Received</span>
-                        </span>
-                      )}
-                    </div>
+                        {/* Application Status Badge */}
+                        {isApplied && (
+                          <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 font-bold flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                            <span>Applied {job.applied_date ? `(${job.applied_date})` : ''}</span>
+                          </span>
+                        )}
 
-                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
-                      <span className="flex items-center gap-1 font-medium text-slate-300">
-                        <Building2 className="w-3.5 h-3.5 text-blue-400" />
-                        {job.company}
-                      </span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                        {job.location}
-                      </span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Globe className="w-3.5 h-3.5 text-slate-400" />
-                        Source: {job.source}
-                      </span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                        {job.posted_at ? job.posted_at.slice(0, 10) : 'Recent'}
-                      </span>
-                    </div>
+                        {isInterviewing && (
+                          <span className="text-xs px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/50 font-bold flex items-center gap-1">
+                            <span>📅 Interviewing</span>
+                          </span>
+                        )}
 
-                    {/* Fit Reason Tag */}
-                    {job.fit_reason && (
-                      <div className="text-xs text-slate-300 bg-slate-900/60 rounded-md px-2.5 py-1.5 inline-block border border-slate-700/60 mt-1">
-                        <strong className="text-blue-400">Why: </strong>
-                        {job.fit_reason}
+                        {isOffered && (
+                          <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/50 font-bold flex items-center gap-1">
+                            <span>🎉 Offer Received</span>
+                          </span>
+                        )}
                       </div>
-                    )}
+
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs text-slate-400">
+                        <span className="flex items-center gap-1 font-medium text-slate-300">
+                          <Building2 className="w-3.5 h-3.5 text-blue-400" />
+                          {job.company}
+                        </span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                          {job.location}
+                        </span>
+                        <span className="hidden sm:inline">•</span>
+                        <span className="hidden sm:flex items-center gap-1">
+                          <Globe className="w-3.5 h-3.5 text-slate-400" />
+                          Source: {job.source}
+                        </span>
+                        <span className="hidden sm:inline">•</span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          {job.posted_at ? job.posted_at.slice(0, 10) : 'Recent'}
+                        </span>
+                      </div>
+
+                      {/* Fit Reason Tag */}
+                      {job.fit_reason && (
+                        <div className="text-xs text-slate-300 bg-slate-900/60 rounded-md px-2.5 py-1.5 inline-block border border-slate-700/60 mt-1">
+                          <strong className="text-blue-400">Why: </strong>
+                          {job.fit_reason}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Fit Score Badge */}
+                    <div className="bg-slate-900/90 border border-slate-700/80 px-3 py-1.5 rounded-xl text-center shrink-0 min-w-[65px] sm:min-w-[75px]">
+                      <div className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Fit Score</div>
+                      <div className="text-xl sm:text-2xl font-black text-white flex items-baseline justify-center gap-0.5">
+                        <span>{job.fit_score}</span>
+                        <span className="text-[10px] text-slate-500 font-normal">/100</span>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Right Score & Actions */}
-                  <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 shrink-0">
-                    <div className="text-right">
-                      <div className="text-xs text-slate-400 font-medium">Fit Score</div>
-                      <div className="text-2xl font-black text-white flex items-baseline gap-1">
-                        <span>{job.fit_score}</span>
-                        <span className="text-xs text-slate-500 font-normal">/100</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
+                  {/* Actions Row: Fully Mobile Responsive with flex-wrap and tap-friendly targets */}
+                  <div className="pt-3 border-t border-slate-700/60 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-2 flex-1">
                       {/* OFFICIAL JOB POST LINK */}
                       <a
                         id={`btn-visit-job-${job.id}`}
                         href={officialJobUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition flex items-center gap-1.5"
+                        className="px-3.5 py-2 sm:py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition flex items-center justify-center gap-1.5 flex-1 sm:flex-initial whitespace-nowrap"
                         title="Open official employer career portal in a new tab"
                       >
-                        <ExternalLink className="w-3.5 h-3.5" />
+                        <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                         <span>Official Job Post ↗</span>
                       </a>
+
+                      {/* TRACK JOB BUTTON - Prominent & mobile-first */}
+                      {onToggleTrackJob && (
+                        <button
+                          id={`btn-track-job-${job.id}`}
+                          onClick={() => onToggleTrackJob(job)}
+                          className={`px-3.5 py-2 sm:py-1.5 text-xs font-semibold rounded-lg transition flex items-center justify-center gap-1.5 flex-1 sm:flex-initial whitespace-nowrap ${
+                            isTracked
+                              ? 'bg-emerald-950/90 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-900/70 shadow-sm shadow-emerald-900/30'
+                              : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+                          }`}
+                          title={isTracked ? 'Tracked in your Application Pipeline' : 'Save to your Application Tracker pipeline'}
+                        >
+                          {isTracked ? <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> : <Briefcase className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
+                          <span>{isTracked ? 'Tracked ✓' : 'Track Job'}</span>
+                        </button>
+                      )}
 
                       {onOpenAppPack && (
                         <button
                           id={`btn-app-pack-${job.id}`}
                           onClick={() => onOpenAppPack(job)}
-                          className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-600/90 hover:bg-amber-500 text-white shadow-sm transition flex items-center gap-1.5"
+                          className="px-3.5 py-2 sm:py-1.5 text-xs font-semibold rounded-lg bg-amber-600/90 hover:bg-amber-500 text-white shadow-sm transition flex items-center justify-center gap-1.5 flex-1 sm:flex-initial whitespace-nowrap"
                           title="Generate 1-Click Application Pack (Cover Letter, Recruiter Pitch, Interview Prep)"
                         >
-                          <Zap className="w-3.5 h-3.5" />
+                          <Zap className="w-3.5 h-3.5 shrink-0" />
                           <span>App Pack</span>
                         </button>
                       )}
@@ -379,38 +400,22 @@ export const TopJobsTab: React.FC<TopJobsTabProps> = ({
                       <button
                         id={`btn-resume-for-${job.id}`}
                         onClick={() => onSelectJobForResume(job)}
-                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition flex items-center gap-1.5"
+                        className="px-3.5 py-2 sm:py-1.5 text-xs font-semibold rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition flex items-center justify-center gap-1.5 flex-1 sm:flex-initial whitespace-nowrap"
                         title="Generate Tailored Resume for this Job"
                       >
-                        <Sparkles className="w-3.5 h-3.5" />
+                        <Sparkles className="w-3.5 h-3.5 shrink-0" />
                         <span>Tailor Resume</span>
                       </button>
-
-                      {onToggleTrackJob && (
-                        <button
-                          id={`btn-track-job-${job.id}`}
-                          onClick={() => onToggleTrackJob(job)}
-                          className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition flex items-center gap-1.5 ${
-                            isTracked
-                              ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-900/60'
-                              : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
-                          }`}
-                          title={isTracked ? 'Tracked in your Application Pipeline' : 'Save to your Application Tracker pipeline'}
-                        >
-                          {isTracked ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Briefcase className="w-3.5 h-3.5 text-slate-400" />}
-                          <span>{isTracked ? 'Tracked ✓' : 'Track Job'}</span>
-                        </button>
-                      )}
-
-                      <button
-                        id={`btn-expand-${job.id}`}
-                        onClick={() => setExpandedJobId(isExpanded ? null : job.id)}
-                        className="p-1.5 rounded-lg bg-slate-700/60 hover:bg-slate-700 text-slate-300 transition"
-                        title={isExpanded ? "Collapse" : "View full description"}
-                      >
-                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                      </button>
                     </div>
+
+                    <button
+                      id={`btn-expand-${job.id}`}
+                      onClick={() => setExpandedJobId(isExpanded ? null : job.id)}
+                      className="p-2 sm:p-1.5 rounded-lg bg-slate-700/60 hover:bg-slate-700 text-slate-300 transition shrink-0 ml-auto sm:ml-0"
+                      title={isExpanded ? "Collapse" : "View full description"}
+                    >
+                      {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
 
@@ -432,13 +437,13 @@ export const TopJobsTab: React.FC<TopJobsTabProps> = ({
                     <div className="bg-slate-950/60 p-3.5 rounded-lg border border-slate-800 text-slate-300 font-mono text-xs leading-relaxed whitespace-pre-wrap max-h-64 overflow-y-auto">
                       {job.description}
                     </div>
-                    <div className="flex justify-between items-center text-xs text-slate-400">
+                    <div className="flex flex-wrap justify-between items-center gap-2 text-xs text-slate-400">
                       <span>Listing ID: {job.id}</span>
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-wrap items-center gap-2">
                         {onOpenAppPack && (
                           <button
                             onClick={() => onOpenAppPack(job)}
-                            className="px-3 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs flex items-center gap-1 shadow-sm transition"
+                            className="px-3 py-1.5 rounded bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs flex items-center gap-1 shadow-sm transition"
                           >
                             <Zap className="w-3 h-3" />
                             <span>Prepare App Pack</span>
@@ -448,10 +453,10 @@ export const TopJobsTab: React.FC<TopJobsTabProps> = ({
                           href={officialJobUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center gap-1 shadow-sm transition"
+                          className="px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center gap-1 shadow-sm transition"
                         >
                           <ExternalLink className="w-3 h-3" />
-                          <span>Official Portal</span>
+                          <span>Official Portal ↗</span>
                         </a>
                       </div>
                     </div>
